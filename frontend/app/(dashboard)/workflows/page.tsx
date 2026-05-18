@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { 
   Zap, 
   Plus, 
   Trash2, 
-  Settings, 
   MessageSquare, 
-  Sparkles,
+  Sparkles, 
   CheckCircle,
   Sliders,
   ChevronDown,
@@ -36,56 +35,13 @@ interface Workflow {
 }
 
 const initialWorkflows: Workflow[] = [
-  {
-    id: 'wf-1',
-    name: 'Instagram Comment-to-DM "Price" Auto-responder',
-    triggerType: 'comment',
-    triggerValue: 'price',
-    actionMessage: 'Hi! Here is our standard product pricing sheet: autoflow.io/pricing 🚀 Let me know if you need any help!',
-    isActive: true,
-    sentCount: 412,
-    conversionCount: 89,
-    nodes: [
-      { id: 'n1', type: 'trigger', title: 'Comment Received', description: 'User comments on any post', configLabel: 'Keyword contains', configValue: 'price' },
-      { id: 'n2', type: 'action', title: 'Auto Reply Comment', description: 'Reply publicly to comment', configLabel: 'Response text', configValue: 'Check your DM! Sent details.' },
-      { id: 'n3', type: 'action', title: 'Direct Message', description: 'Send DM to user', configLabel: 'DM content', configValue: 'Hi! Here is our pricing...' }
-    ]
-  },
-  {
-    id: 'wf-2',
-    name: 'AI Lead Qualifier for DM Inquiries',
-    triggerType: 'dm',
-    triggerValue: 'All incoming messages',
-    actionMessage: '[AI Assistant]: Will qualify the lead by asking for their business goals and size.',
-    isActive: true,
-    sentCount: 184,
-    conversionCount: 42,
-    nodes: [
-      { id: 'n4', type: 'trigger', title: 'DM Received', description: 'User sends direct message', configLabel: 'Trigger condition', configValue: 'All first-time messages' },
-      { id: 'n5', type: 'condition', title: 'AI Qualification', description: 'Evaluate interest via LLM', configLabel: 'Prompt Goal', configValue: 'Collect email & phone number' },
-      { id: 'n6', type: 'action', title: 'CRM Sync', description: 'Update Lead Score in Inbox', configLabel: 'CRM Field', configValue: 'Lead Score +30' }
-    ]
-  },
-  {
-    id: 'wf-3',
-    name: 'Welcome DM on New Follower',
-    triggerType: 'follow',
-    triggerValue: 'New Follower',
-    actionMessage: 'Hey! Thanks for the follow. Here is a special 15% discount code for you: CREATOR15 🎉',
-    isActive: false,
-    sentCount: 92,
-    conversionCount: 12,
-    nodes: [
-      { id: 'n7', type: 'trigger', title: 'New Follower', description: 'User clicks follow', configLabel: 'Condition', configValue: 'Immediately' },
-      { id: 'n8', type: 'action', title: 'Direct Message', description: 'Send DM with code', configLabel: 'DM content', configValue: 'Hey! Thanks for the follow...' }
-    ]
-  }
+  // No initial workflows for a fresh account
 ];
 
 export default function WorkflowsPage() {
   const [workflows, setWorkflows] = useState<Workflow[]>(initialWorkflows);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>('wf-1');
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
 
   // Form states for creating a new workflow
   const [newWfName, setNewWfName] = useState<string>('');
@@ -104,7 +60,7 @@ export default function WorkflowsPage() {
     }));
   };
 
-  const handleDeleteWorkflow = (id: string, e: React.MouseEvent) => {
+  const handleDeleteWorkflow = (id: string, e: MouseEvent) => {
     e.stopPropagation();
     setWorkflows(prev => prev.filter(w => w.id !== id));
     if (selectedWorkflowId === id) {
@@ -112,7 +68,7 @@ export default function WorkflowsPage() {
     }
   };
 
-  const handleCreateWorkflow = (e: React.FormEvent) => {
+  const handleCreateWorkflow = (e: FormEvent) => {
     e.preventDefault();
     if (!newWfName.trim()) return;
 
@@ -131,8 +87,18 @@ export default function WorkflowsPage() {
           type: 'trigger', 
           title: newTriggerType === 'comment' ? 'Comment Received' : newTriggerType === 'dm' ? 'DM Received' : 'New Follower', 
           description: newTriggerType === 'comment' ? 'User comments on post' : newTriggerType === 'dm' ? 'User DMs page' : 'User starts following',
-          configLabel: 'Keyword contains', 
-          configValue: newTriggerValue || 'Any' 
+          configLabel: (() => {
+            if (newTriggerType === 'comment') return 'Keyword contains';
+            if (newTriggerType === 'dm') return newTriggerValue ? 'Keyword contains' : 'Trigger condition';
+            if (newTriggerType === 'follow') return 'Condition';
+            return ''; // Should not happen
+          })(),
+          configValue: (() => {
+            if (newTriggerType === 'comment') return newTriggerValue || 'Any';
+            if (newTriggerType === 'dm') return newTriggerValue || 'All incoming messages';
+            if (newTriggerType === 'follow') return 'Immediately';
+            return ''; // Should not happen
+          })()
         },
         { 
           id: `n-${Date.now()}-2`, 
@@ -157,9 +123,9 @@ export default function WorkflowsPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-black text-white overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col bg-black text-white overflow-hidden font-sans">
       {/* Header bar */}
-      <div className="bg-[#0F0F0F] border-b border-[rgba(255,255,255,0.08)] px-6 py-4 flex justify-between items-center shrink-0">
+      <div className="bg-[#0F0F0F] border-b border-[rgba(255,255,255,0.08)] px-4 py-3 flex justify-between items-center shrink-0">
         <div>
           <h1 className="text-base font-bold text-white flex items-center gap-2 font-sans">
             <Zap className="text-white" size={18} />
@@ -179,7 +145,7 @@ export default function WorkflowsPage() {
       <div className="flex-1 flex overflow-hidden">
         
         {/* Left Side: Workflows list */}
-        <div className="w-96 bg-[#0F0F0F] border-r border-[rgba(255,255,255,0.08)] flex flex-col overflow-y-auto shrink-0 p-5 space-y-4">
+        <div className="w-full md:w-96 bg-[#0F0F0F] md:border-r border-[rgba(255,255,255,0.08)] flex flex-col overflow-y-auto shrink-0 p-4 md:p-5 space-y-4">
           <h3 className="text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2 flex items-center gap-1.5 shrink-0 select-none">
             <Sliders size={13} className="text-white" /> Active Campaigns ({workflows.length})
           </h3>
@@ -219,7 +185,7 @@ export default function WorkflowsPage() {
                   <div className="flex items-center gap-2">
                     {/* Toggle Switch */}
                     <button
-                      onClick={(e) => {
+                      onClick={(e: any) => {
                         e.stopPropagation();
                         toggleWorkflowActive(wf.id);
                       }}
@@ -273,12 +239,12 @@ export default function WorkflowsPage() {
         </div>
 
         {/* Right Side: Interactive Nodes Visual Canvas */}
-        <div className="flex-1 bg-black relative overflow-hidden flex flex-col p-6">
+        <div className="flex-1 bg-black relative overflow-hidden flex flex-col p-4 md:p-6">
           {selectedWorkflow ? (
             <div className="flex-1 flex flex-col min-h-0">
               
               {/* Node canvas header info */}
-              <div className="flex justify-between items-center bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-4 mb-6 shrink-0 select-none">
+              <div className="flex justify-between items-center bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-3 md:p-4 mb-4 md:mb-6 shrink-0 select-none">
                 <div>
                   <span className="text-[9px] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] text-white px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
                     Visual Workspace
@@ -294,14 +260,14 @@ export default function WorkflowsPage() {
               </div>
 
               {/* Graphical Nodes Flow */}
-              <div className="flex-1 overflow-y-auto flex flex-col items-center justify-start py-8 space-y-6">
+              <div className="flex-1 overflow-y-auto overflow-x-auto flex flex-col items-center justify-start py-8 space-y-6">
                 
                 {selectedWorkflow.nodes.map((node, index) => {
                   const isTrigger = node.type === 'trigger';
                   const isCondition = node.type === 'condition';
                   
                   return (
-                    <div key={node.id} className="flex flex-col items-center w-full max-w-md shrink-0">
+                    <div key={node.id} className="flex flex-col items-center w-full shrink-0">
                       
                       {/* Connection arrow */}
                       {index > 0 && (
@@ -360,7 +326,7 @@ export default function WorkflowsPage() {
       {/* Slide-out Drawer: Create workflow form */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-end">
-          <div className="w-full max-w-lg h-full bg-[#0F0F0F] border-l border-[rgba(255,255,255,0.08)] flex flex-col shadow-2xl p-6 overflow-y-auto">
+          <div className="w-full sm:max-w-lg h-full bg-[#0F0F0F] border-l border-[rgba(255,255,255,0.08)] flex flex-col shadow-2xl p-4 md:p-6 overflow-y-auto">
             
             <div className="flex justify-between items-center mb-6 border-b border-[rgba(255,255,255,0.06)] pb-4 shrink-0">
               <div className="flex items-center gap-2 select-none">

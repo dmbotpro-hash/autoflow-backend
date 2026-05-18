@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+
 import { MessageSquare, Users, Zap, TrendingUp, Plus } from 'lucide-react';
 import ActivityChart from '@/components/dashboard/ActivityChart';
 
@@ -12,21 +13,15 @@ interface Stats {
 }
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<Stats>({
+    totalMessages: 0,
+    totalContacts: 0,
+    activeConversations: 0,
+    automationCount: 0,
+  });
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setStats({
-        totalMessages: 1240,
-        totalContacts: 382,
-        activeConversations: 14,
-        automationCount: 7,
-      });
-      setLoading(false);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, []);
+  // Fresh account empty state: real data will replace these values once backend integration is wired.
+
 
   const cards = [
     {
@@ -83,21 +78,28 @@ export default function DashboardPage() {
               <card.icon size={16} className="text-white" />
             </div>
             <div className="text-3xl font-bold tracking-tight text-white font-sans">
-              {loading ? (
-                <span className="inline-block w-16 h-8 bg-[#141414] rounded animate-pulse" />
-              ) : (
-                card.value.toLocaleString()
-              )}
+              {card.value.toLocaleString()}
             </div>
+
             <div className="text-[#A0A0A0] text-xs mt-2 font-medium">{card.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Charts module section */}
+      {/* Charts module section (fresh-account empty state) */}
       <div className="grid grid-cols-1 gap-6">
-        <ActivityChart />
+        {stats.totalMessages === 0 ? (
+          <div className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6">
+            <h2 className="text-white font-semibold text-xs mb-2 tracking-wider uppercase opacity-80 select-none">Activity</h2>
+            <p className="text-[#606060] text-xs font-light">
+              No activity yet. When new comments and DMs arrive, analytics will appear here.
+            </p>
+          </div>
+        ) : (
+          <ActivityChart />
+        )}
       </div>
+
 
       {/* Elegant Quick Actions panel */}
       <div className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6">

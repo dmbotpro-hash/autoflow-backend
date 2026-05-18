@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core'; // <-- Yahan 'I' small kar diya hai
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
@@ -13,7 +13,7 @@ async function bootstrap() {
 
   // Bulletproof CORS Configuration for production & testing
   app.enableCors({
-    origin: true, // Yeh automatic request karne wale server (Netlify) ka URL detect karke allow kar dega
+    origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
@@ -21,15 +21,12 @@ async function bootstrap() {
   const port = Number(config.get<number>('PORT') ?? 3001);
 
   // Global prefix hataya ya lagaya aapke routing par depend karta hai.
-  // Agar aapke frontend par '/auth/register' par hit ho raha hai bina '/api' ke, 
-  // toh is prefix ko comment out ya check karna zaroori hai.
   // app.setGlobalPrefix('api');
-
 
   // Security headers configured safely to allow Cross-Origin isolation
   app.use(
     helmet({
-      crossOriginOpenerPolicy: { policy: 'unsafe-none' }, // Yeh login / auth flows ko block hone se rokega
+      crossOriginOpenerPolicy: { policy: 'unsafe-none' }, 
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );

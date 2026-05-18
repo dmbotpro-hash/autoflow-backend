@@ -105,7 +105,7 @@ export class WorkflowEngineService {
     this.logger.log(`[WorkflowEngineService] Keyword match. workflow=${workflow.name}`);
 
     if (config.replyOnce) {
-      const alreadyReplied = await this.checkAlreadyReplied(workflow.id, payload.commenterId);
+      const alreadyReplied = await this.checkAlreadyReplied(payload.workspaceId, payload.commenterId);
       if (alreadyReplied) {
         this.logger.log(`[WorkflowEngineService] replyOnce hit. Skipping commenterId=${payload.commenterId}`);
         return;
@@ -145,11 +145,11 @@ export class WorkflowEngineService {
     }
   }
 
-  private async checkAlreadyReplied(workflowId: string, commenterId: string): Promise<boolean> {
+  private async checkAlreadyReplied(workspaceId: string, commenterId: string): Promise<boolean> {
     try {
       const log = await this.prisma.usageLog.findFirst({
         where: {
-          workspaceId: undefined as any,
+          workspaceId,
           type: 'message_sent',
           metadata: {
             path: ['commenterId'],
@@ -237,5 +237,3 @@ export class WorkflowEngineService {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
-
-

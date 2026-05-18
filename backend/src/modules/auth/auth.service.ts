@@ -21,6 +21,7 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -96,7 +97,7 @@ export class AuthService {
     const refreshToken = await this.prisma.refreshToken.create({
       data: {
         userId: user.id,
-        token: require('crypto').randomBytes(40).toString('hex'),
+        token: crypto.randomBytes(40).toString('hex'),
         expiresAt,
       }
     });
@@ -112,4 +113,3 @@ export class AuthService {
     };
   }
 }
-

@@ -223,7 +223,7 @@ export default function InboxPage() {
   );
 
   return (
-    <div className="h-screen flex flex-col bg-black text-white overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col bg-black text-white overflow-hidden font-sans">
       {/* Header info */}
       <div className="bg-[#0F0F0F] border-b border-[rgba(255,255,255,0.08)] px-6 py-4 flex justify-between items-center shrink-0">
         <div>
