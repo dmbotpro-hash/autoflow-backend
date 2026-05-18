@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #000000;
+  color: #FFFFFF;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Premium radial illumination highlight */
+.premium-radial-glow {
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 65%), #000000;
+}
+
+/* Ultra-fine luxury minimalist dot grid pattern */
+.premium-dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.02) 1.2px, transparent 1.2px);
+  background-size: 32px 32px;
+}
+
+/* Premium typography animations */
+@keyframes text-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes text-letter-spacing {
+  from {
+    letter-spacing: -0.05em;
+    opacity: 0;
+  }
+  to {
+    letter-spacing: -0.02em;
+    opacity: 1;
+  }
+}
+
+.animate-text-reveal {
+  animation: text-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-text-reveal-slow {
+  animation: text-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-letter-spacing {
+  animation: text-letter-spacing 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom styles for elements to match CreatorFlow exact specs */
+.trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: #FFFFFF;
+  animation: text-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #FFFFFF;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  margin-bottom: 12px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 2px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}

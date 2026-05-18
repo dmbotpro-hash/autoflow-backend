@@ -1,0 +1,189 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String?
+  name          String
+  avatarUrl     String?
+  googleId      String?   @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  workspaces    WorkspaceMember[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Workspace {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  plan      String   @default("free")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  members          WorkspaceMember[]
+  socialAccounts   SocialAccount[]
+  contacts         Contact[]
+  workflows        Workflow[]
+  conversations    Conversation[]
+  subscriptions    Subscription[]
+  usageLogs        UsageLog[]
+}
+
+model WorkspaceMember {
+  id          String    @id @default(uuid())
+  userId      String
+  workspaceId String
+  role        String    @default("member")
+  createdAt   DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([userId, workspaceId])
+}
+
+model SocialAccount {
+  id            String   @id @default(uuid())
+  workspaceId   String
+  platform      String
+  accountId     String
+  accountName   String
+  accessToken   String
+  tokenExpiry   DateTime?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id])
+  conversations Conversation[]
+}
+
+model Contact {
+  id            String   @id @default(uuid())
+  workspaceId   String
+  instagramId   String?
+  name          String?
+  username      String?
+  avatarUrl     String?
+  tags          String[]
+  notes         String?
+  leadScore     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id])
+  conversations Conversation[]
+}
+
+model Conversation {
+  id                String   @id @default(uuid())
+  workspaceId       String
+  socialAccountId  String
+  contactId         String?
+  platform          String
+  externalThreadId String?
+  status            String   @default("open")
+  assignedTo        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  workspace       Workspace     @relation(fields: [workspaceId], references: [id])
+  socialAccount   SocialAccount @relation(fields: [socialAccountId], references: [id])
+  contact         Contact?      @relation(fields: [contactId], references: [id])
+  messages        Message[]
+}
+
+model Message {
+  id              String    @id @default(uuid())
+  conversationId  String
+  direction       String
+  content         String
+  messageType     String    @default("text")
+  isAiGenerated   Boolean   @default(false)
+  externalId      String?
+  sentAt          DateTime  @default(now())
+  deliveredAt     DateTime?
+  readAt          DateTime?
+
+  conversation    Conversation @relation(fields: [conversationId], references: [id])
+}
+
+model Workflow {
+  id          String    @id @default(uuid())
+  workspaceId String
+  name        String
+  trigger     String
+  isActive    Boolean   @default(false)
+  config      Json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  nodes       WorkflowNode[]
+}
+
+model WorkflowNode {
+  id         String   @id @default(uuid())
+  workflowId String
+  type       String
+  position   Json
+  config     Json
+  createdAt  DateTime @default(now())
+
+  workflow   Workflow @relation(fields: [workflowId], references: [id])
+}
+
+model Subscription {
+  id          String    @id @default(uuid())
+  workspaceId String
+  plan        String
+  status      String    @default("active")
+  startDate   DateTime
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+model UsageLog {
+  id          String    @id @default(uuid())
+  workspaceId String
+  type        String
+  count       Int       @default(1)
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+model ChatLog {
+  id        String   @id @default(uuid())
+  senderId  String
+  message   String
+  aiReply   String
+  createdAt DateTime @default(now())
+}
+

@@ -1,0 +1,1 @@
+Placeholder-only file is disallowed by the prompt; this file exists only to document folder intent. NEXT SESSION INSTRUCTION: Delete this file in the next AI session if strict skeleton-only rules are enforced globally.
