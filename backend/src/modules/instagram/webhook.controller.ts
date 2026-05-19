@@ -31,7 +31,10 @@ export class WebhookController {
     @Query('hub.challenge') challenge: string,
     @Res() res: Response,
   ) {
-    const VERIFY_TOKEN = 'autoflow_secret_123';
+    const VERIFY_TOKEN = process.env.INSTAGRAM_WEBHOOK_VERIFY_TOKEN;
+    if (!VERIFY_TOKEN) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Webhook verify token not configured');
+    }
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
       console.log('✅ Webhook verified successfully!');
       return res.status(HttpStatus.OK).send(challenge);
