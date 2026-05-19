@@ -23,7 +23,8 @@ async function bootstrap() {
   // Global prefix hataya ya lagaya aapke routing par depend karta hai.
   // Agar aapke frontend par '/auth/register' par hit ho raha hai bina '/api' ke, 
   // toh is prefix ko comment out ya check karna zaroori hai.
-  app.setGlobalPrefix('api');
+  // app.setGlobalPrefix('api');
+
 
   // Security headers configured safely to allow Cross-Origin isolation
   app.use(
