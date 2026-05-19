@@ -9,20 +9,29 @@ import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const config = app.get(ConfigService);
+
+  // Bulletproof CORS Configuration for production & testing
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: true, // Yeh automatic request karne wale server (Netlify) ka URL detect karke allow kar dega
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
 
-  const config = app.get(ConfigService);
-
   const port = Number(config.get<number>('PORT') ?? 3001);
-  const frontendUrl = config.get<string>('FRONTEND_URL') ?? 'http://localhost:3000';
 
+  // Global prefix hataya ya lagaya aapke routing par depend karta hai.
+  // Agar aapke frontend par '/auth/register' par hit ho raha hai bina '/api' ke, 
+  // toh is prefix ko comment out ya check karna zaroori hai.
   app.setGlobalPrefix('api');
 
-  // Security headers
-  app.use(helmet());
+  // Security headers configured safely to allow Cross-Origin isolation
+  app.use(
+    helmet({
+      crossOriginOpenerPolicy: { policy: 'unsafe-none' }, // Yeh login / auth flows ko block hone se rokega
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
 
   // Compression
   app.use(compression());
@@ -43,4 +52,3 @@ async function bootstrap() {
 }
 
 bootstrap();
-

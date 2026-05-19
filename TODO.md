@@ -1,7 +1,7 @@
-- [x] Scan codebase for hardcoded API keys and embedded secrets.
-- [x] Remove hardcoded Instagram webhook verify token from `backend/src/modules/instagram/webhook.controller.ts`.
-- [x] Update `backend/src/modules/instagram/webhook.controller.ts` to use `process.env.INSTAGRAM_WEBHOOK_VERIFY_TOKEN`.
-- [x] Create/update root `.env.example` with placeholders for Groq/Gemini/OpenAI + Instagram.
-- [x] Re-scan for occurrences of `autoflow_secret_123`, `sk-...`, `AIza...`, and hardcoded Bearer tokens.
-- [ ] Run backend build/tests (npm run build) to confirm compilation.
+- [ ] Inspect CORS setup in backend/src/main.ts and related websocket CORS configs
+- [ ] Propose edit plan to update app.enableCors to read allowed origin(s) from env var (FRONTEND_URL) and include localhost for dev
+- [ ] After approval, modify backend/src/main.ts CORS configuration accordingly
+- [ ] Optionally align WebSocket gateway CORS with same env-based origin
+- [ ] Run backend build/lint/typecheck to ensure compilation
+- [ ] Provide final verification steps for Render + Netlify env vars
 
