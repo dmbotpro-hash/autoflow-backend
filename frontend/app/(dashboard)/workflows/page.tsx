@@ -60,7 +60,7 @@ export default function WorkflowsPage() {
     }));
   };
 
-  const handleDeleteWorkflow = (id: string, e: MouseEvent) => {
+  const handleDeleteWorkflow = (id: string, e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setWorkflows(prev => prev.filter(w => w.id !== id));
     if (selectedWorkflowId === id) {
