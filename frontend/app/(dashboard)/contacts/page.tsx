@@ -29,12 +29,13 @@ export default function ContactsPage() {
           Contacts & Leads
         </h1>
         <p className="text-xs text-[#A0A0A0] mt-1 font-normal">
-          Aapke Instagram leads yahan show hote hain.
+          Leads captured from your Instagram automations are listed here.
         </p>
       </div>
 
       <div className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl overflow-hidden shadow-sm">
-        <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse min-w-[480px]">
           <thead className="bg-[#141414]/50 border-b border-[rgba(255,255,255,0.08)] text-[#A0A0A0] text-[10px] font-bold uppercase tracking-wider select-none">
             <tr>
               <th className="px-6 py-4">User</th>
@@ -72,9 +73,10 @@ export default function ContactsPage() {
             ))}
           </tbody>
         </table>
+        </div>
 
         {contacts.length === 0 && !loading && (
-          <div className="p-12 text-center text-[#606060] text-xs font-light">Abhi tak koi contacts nahi mile.</div>
+          <div className="p-12 text-center text-[#606060] text-xs font-light">No contacts yet. Leads captured from your Instagram automations will appear here.</div>
         )}
 
         {loading && (
