@@ -8,7 +8,7 @@ const plans = [
   {
     name: 'Free',
     price: '₹0',
-    period: 'hamesha ke liye',
+    period: 'forever',
     desc: 'Perfect for getting started.',
     features: [
       '500 DMs/month',
@@ -17,7 +17,7 @@ const plans = [
       'Basic AI replies',
       'Inbox access',
     ],
-    cta: 'Free Mein Shuru Karo',
+    cta: 'Start for Free',
     ctaLink: '/signup',
     highlight: false,
   },
@@ -35,7 +35,7 @@ const plans = [
       'Priority support',
       'Analytics dashboard',
     ],
-    cta: 'Growth Shuru Karo',
+    cta: 'Get Growth Now',
     ctaLink: '/signup',
     highlight: true,
   },
@@ -53,7 +53,7 @@ const plans = [
       'Dedicated support',
       'API access',
     ],
-    cta: 'Agency Plan Lo',
+    cta: 'Get Agency Now',
     ctaLink: '/signup',
     highlight: false,
   },
@@ -157,7 +157,7 @@ export default function PricingSection() {
 
         {/* Guarantee */}
         <div className="text-center mt-10 text-[#606060] text-xs leading-relaxed font-light">
-          ✓ Credit card nahi chahiye &nbsp;•&nbsp; ✓ Kabhi bhi cancel karo &nbsp;•&nbsp; ✓ Indian payment methods
+          ✓ No credit card required &nbsp;•&nbsp; ✓ Cancel anytime &nbsp;•&nbsp; ✓ Secure local payment networks
         </div>
       </div>
     </section>

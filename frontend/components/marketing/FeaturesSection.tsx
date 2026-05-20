@@ -4,34 +4,34 @@ import { motion } from 'framer-motion';
 
 const features = [
   {
-    category: 'ENGAGEMENT',
+    icon: '💬',
     title: 'Comment-to-DM',
-    desc: 'Koi bhi keyword comment kare — instant DM jaaye. Reels, posts, stories sab pe kaam karta hai.',
+    desc: 'Any keyword comment triggers an instant DM. Works on Reels, posts, and Stories.',
   },
   {
-    category: 'ARTIFICIAL INTELLIGENCE',
+    icon: '🤖',
     title: 'AI Auto-Reply',
-    desc: 'AI khud detect karta hai sales inquiry hai ya support. Us hisaab se smart reply bhejta hai.',
+    desc: 'AI detects sales vs support intent and sends smart, contextual replies automatically.',
   },
   {
-    category: 'COMMUNICATION',
+    icon: '📥',
     title: 'Unified Inbox',
-    desc: 'Saare DMs ek jagah. Real-time updates. Team ke saath manage karo.',
+    desc: 'All DMs in one place. Real-time updates. Manage conversations with your team.',
   },
   {
-    category: 'METRICS & ANALYTICS',
-    title: 'Advanced Analytics',
-    desc: 'Kitne DMs gaye, kitne opens hue, kitni conversions — sab ek dashboard pe.',
+    icon: '📊',
+    title: 'Analytics',
+    desc: 'Track delivery rate, open rate, and conversions — all in one dashboard.',
   },
   {
-    category: 'SAFETY & COMPLIANCE',
-    title: 'Meta-Approved API',
-    desc: 'Official Instagram Graph API use karta hai. Koi ban risk nahi. 100% safe.',
+    icon: '🔒',
+    title: 'Meta-Approved',
+    desc: 'Uses official Instagram Graph API. No ban risk. 100% policy compliant.',
   },
   {
-    category: 'AUTOMATION ENGINE',
-    title: 'Visual Workflow Builder',
-    desc: 'Visual drag-drop se complex automations banao. Delay, conditions, AI nodes — sab kuch.',
+    icon: '⚡',
+    title: 'Workflow Builder',
+    desc: 'Build complex automations with delays, conditions, and AI nodes visually.',
   },
 ];
 
@@ -57,7 +57,7 @@ export default function FeaturesSection() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="text-white text-3xl sm:text-[32px] font-semibold leading-[1.25] tracking-tight mt-3 font-sans"
           >
-            Sab Kuch Ek Jagah
+            Everything You Need to Scale
           </motion.h2>
         </div>
 
@@ -86,8 +86,8 @@ export default function FeaturesSection() {
               transition={{ type: "tween", duration: 0.2 }}
               className="group bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-8 hover:bg-[#141414] hover:border-[rgba(255,255,255,0.18)] transition-all duration-200 cursor-default select-none"
             >
-              <div className="text-[#A0A0A0] text-[10px] font-bold tracking-wider uppercase mb-3 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-white select-none">
-                {feature.category}
+              <div className="text-2xl mb-4 select-none transition-transform duration-200 group-hover:scale-110">
+                {feature.icon}
               </div>
               <h3 className="text-white font-semibold text-lg mb-2.5 leading-snug font-sans">
                 {feature.title}

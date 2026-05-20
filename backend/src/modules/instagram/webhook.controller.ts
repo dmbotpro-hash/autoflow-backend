@@ -1,15 +1,17 @@
-import { Controller, Get, Post, Query, Req, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Query, Req, Res, HttpStatus, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { WebhookService } from './webhook.service';
 import { GoogleGenerativeAI } from '@google/generative-ai'; // 👉 AI imports add kiye
 import OpenAI from 'openai';
 
 import { PrismaService } from '../../prisma/prisma.service';
-
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('webhook/instagram')
+@Throttle({ default: { limit: 500, ttl: 60000 } })
 export class WebhookController {
-  
+  private readonly logger = new Logger(WebhookController.name);
+
   // ==================== CONFIGURATIONS ====================
   // 🔒 Saari keys ab secure hain aur aapki .env file se aayengi
   private readonly INSTAGRAM_ACCESS_TOKEN = process.env.INSTAGRAM_ACCESS_TOKEN;
@@ -44,69 +46,12 @@ export class WebhookController {
 
   @Post()
   async receiveWebhook(@Req() req: Request, @Res() res: Response) {
-    console.log('📬 [RAW EVENT RECEIVED] Meta ne server ko hit kiya! Data:', JSON.stringify(req.body, null, 2));
+    this.logger.log('📬 [RAW EVENT RECEIVED] Meta ne server ko hit kiya!');
 
-    try {
-      const body = req.body;
-
-      if (body.object === 'instagram' && body.entry) {
-        for (const entry of body.entry) {
-          if (entry.messaging && entry.messaging.length > 0) {
-            const webhookEvent = entry.messaging[0];
-
-            const senderId = webhookEvent.sender?.id;
-            const botId = entry.id;
-
-            if (!senderId) {
-              console.log('⚠️ Is event mein sender.id nahi mila. Skip kar rahe hain.');
-              continue;
-            }
-
-            if (senderId === botId) {
-              console.log('🛑 Ye Bot ka apna bheja hua message hai, ignore.');
-              continue;
-            }
-
-            let incomingText = '';
-            if (webhookEvent.message) {
-              incomingText = webhookEvent.message.text || '[Non-text packet]';
-            } else if (webhookEvent.message_edit) {
-              console.log('⚠️ Encrypted/Edited message detect hua, but hum try karenge!');
-              incomingText = 'Hello';
-            } else {
-              incomingText = 'Hello';
-            }
-
-            console.log(`💬 Processing chat for Sender ID: ${senderId} | Message: "${incomingText}"`);
-
-            console.log('🤖 AI Brain is thinking...');
-            const aiReply = await this.getAIReplyFromRouter(incomingText);
-
-            console.log(`🚀 Sending AI Reply: "${aiReply}"`);
-            await this.sendInstagramMessage(senderId, aiReply);
-
-            // 🗄️ Database mein save karna
-            try {
-              await this.prisma.chatLog.create({
-                data: {
-                  senderId: senderId,
-                  message: incomingText,
-                  aiReply: aiReply,
-                },
-              });
-              console.log('💾 Chat saved to database successfully!');
-            } catch (dbError) {
-              console.error('❌ Database storage error:', dbError);
-            }
-
-          } else {
-            console.log('⚠️ Event mein messaging array khali mila.');
-          }
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error processing webhook:', error);
-    }
+    // Delegate execution asynchronously so we respond to Meta immediately without blocking the request
+    this.webhookService.processWebhook(req.body).catch((err: any) => {
+      this.logger.error(`❌ Error in background webhook processing: ${err?.message ?? err}`);
+    });
 
     return res.status(HttpStatus.OK).send('EVENT_RECEIVED');
   }

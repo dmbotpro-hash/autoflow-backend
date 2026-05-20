@@ -11,51 +11,51 @@ const complianceItems = [
   },
   {
     title: 'Secure Meta OAuth Connection',
-    desc: 'Apna Instagram password kabhi share na karein. Connect securely via Meta\'s official sign-in system.',
+    desc: 'Never share your Instagram password. Connect securely via Meta\'s official sign-in system.',
   },
   {
     title: 'Business & Creator Accounts',
-    desc: 'Dono Business aur Creator accounts perfectly support hote hain bina kisi system restrictions ke.',
+    desc: 'Both Business and Creator accounts are fully supported without any system restrictions.',
   },
   {
     title: 'GDPR & Privacy Compliant',
-    desc: 'Aapke users aur leads ka data humesha encrypt aur secure rehta hai. We respect user privacy laws.',
+    desc: 'Your user and lead data is always encrypted and secure. We strictly respect user privacy regulations.',
   },
   {
     title: 'Smart Instagram Rate Limits',
-    desc: 'Instagram rules ke accodring we follow 200 DMs/hour parameters taaki aapka account fully safe rahe.',
+    desc: 'We strictly follow Instagram\'s rate limit parameters (up to 200 DMs/hour) to keep your account fully safe.',
   },
   {
     title: 'Cancel Anytime',
-    desc: 'Koi minimum lock-in period ya shady contracts nahi hain. Aap jab chahein account cancel ya pause kar sakte hain.',
+    desc: 'No minimum lock-in periods or hidden contracts. Cancel or pause your subscription at any time.',
   },
 ];
 
 const faqs = [
   {
     id: 1,
-    question: 'AutoFlow kya hai aur ye kaise kaam karta hai?',
-    answer: 'AutoFlow ek Meta-Approved Instagram DM automation platform hai. Jab koi user aapki post, Reel ya Story par aapka defined keyword (jaise "LINK" ya "PRICE") comment karta hai, toh AutoFlow unhe automatically seconds ke andar direct message (DM) bhej deta hai. Isse aapko 24/7 bina manual work ke leads aur sales convert karne me help milti hai.',
+    question: 'What is AutoFlow and how does it work?',
+    answer: 'AutoFlow is a Meta-approved Instagram DM automation platform. When a user comments a specific keyword (like "LINK" or "PRICE") on your post, Reel, or Story, AutoFlow instantly sends them a direct message (DM) containing your resource or link. This helps you capture leads and boost sales 24/7 without manual effort.',
   },
   {
     id: 2,
-    question: 'Kya isse mera Instagram account ban ya restrict ho sakta hai?',
-    answer: 'Nahi! AutoFlow Meta ka official Graph API use karta hai. Hum kisi bhi browser extensions, scrapers, ya unofficial scripts ka use nahi karte jo Instagram guidelines ko violate karein. 14,000+ creators aur brands bina kisi restriction issue ke hamara platform safely use kar rahe hain.',
+    question: 'Can this get my Instagram account banned or restricted?',
+    answer: 'No. AutoFlow uses the official Meta Graph API. We do not use browser extensions, scrapers, or unofficial bots that violate Instagram\'s terms of service. Over 14,000 creators and brands trust and use our platform safely without any issues.',
   },
   {
     id: 3,
-    question: 'AutoFlow use karne ke liye kya requirement hai?',
-    answer: 'Instagram DM automation API rules ke according aapke paas Instagram Business ya Instagram Creator account hona chahiye. Agar aapka personal account hai, toh aap use Instagram Settings me jaakar 2 minute me bilkul free me switch kar sakte hain.',
+    question: 'What are the requirements to use AutoFlow?',
+    answer: 'According to Instagram\'s API policy, you need an Instagram Creator or Business account. If you currently have a personal account, you can switch it to a Creator/Business account in Instagram Settings in less than 2 minutes for free.',
   },
   {
     id: 4,
-    question: 'Kya main users se link bhejane se pehle email collect kar sakta hoon?',
-    answer: 'Haan! AutoFlow ke Pro aur Growth plans par aap user ko link deliver karne se pehle unka email address direct DM me collect kar sakte hain. Ye emails hamare lead dashboard (CRM) me save hote hain jise aap Mailchimp ya active email providers par direct CSV export kar sakte hain.',
+    question: 'Can I collect email addresses before sending links?',
+    answer: 'Yes. With our Growth and Pro plans, you can collect user email addresses directly inside the DM thread before delivering the automated link. These leads are saved to your CRM dashboard and can be exported as a CSV file.',
   },
   {
     id: 5,
-    question: 'Subscription plans aur pricing kya hai?',
-    answer: 'Humara Free plan hamesha ke liye free hai jisme aapko 500 DMs/month milte hain. Pro plan pricing ₹999/month hai (5,000 DMs, lead collection tracking). Agency/Growth plan pricing ₹2,999/month hai (Unlimited workflow campaigns aur unlimited workspaces agencies ke liye).',
+    question: 'What are your subscription plans and pricing?',
+    answer: 'Our Free plan is free forever and includes 500 DMs/month. The Growth plan is ₹999/month (includes 5,000 DMs/month and lead collection), and the Agency plan is ₹2,999/month (includes unlimited workflows and multiple client accounts).',
   },
 ];
 
@@ -70,7 +70,7 @@ export default function ComplianceAndFaq() {
     <section className="bg-black text-white font-sans py-24 px-6 border-t border-[rgba(255,255,255,0.06)]">
       <div className="max-w-[1100px] mx-auto space-y-28">
         
-        {/* SECTION 1: Compliance "Built on Meta's official API. No bots. No bans." */}
+        {/* SECTION 1: Compliance */}
         <div className="space-y-16">
           <div className="text-center max-w-2xl mx-auto space-y-4">
             <motion.div 
@@ -138,7 +138,7 @@ export default function ComplianceAndFaq() {
               Frequently Asked Questions
             </motion.h2>
             <p className="text-[#A0A0A0] text-sm leading-relaxed font-light">
-              Humare product features aur safety parameters ke bare me aam saval.
+              Common questions about our features, compliance, and billing.
             </p>
           </div>
 

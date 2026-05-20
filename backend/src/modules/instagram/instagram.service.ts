@@ -14,6 +14,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { withRetry } from '../../common/utils/retry.util';
 
 @Injectable()
 export class InstagramService {
@@ -39,31 +40,95 @@ export class InstagramService {
 
   /**
    * Sends a DM to a user.
-   * MVP fallback: if Meta API integration is not implemented yet, we return false.
    */
-  async sendDM(accessToken: string, instagramUserId: string, text: string) {
-    this.logger.warn(
-      `[InstagramService] sendDM called, but Meta Graph API integration is not implemented yet. instagramUserId=${instagramUserId}`,
-    );
+  async sendDM(accessToken: string, instagramUserId: string, text: string): Promise<boolean> {
+    if (!accessToken || !instagramUserId || !text) {
+      this.logger.warn('[InstagramService] Missing required fields for sendDM');
+      return false;
+    }
 
-    // TODO: Implement Meta Graph API call.
-    // For now, fail-safe to prevent broken behavior.
-    if (!accessToken || !instagramUserId || !text) return false;
-    return false;
+    const url = `https://graph.instagram.com/v21.0/me/messages`;
+    const payload = {
+      recipient: { id: instagramUserId },
+      message: { text },
+    };
+
+    try {
+      return await withRetry(async () => {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(`Meta Graph API error: ${res.statusText} (${JSON.stringify(body)})`);
+        }
+
+        const data: any = await res.json();
+        if (data?.error) {
+          throw new Error(`Meta Graph API error: ${JSON.stringify(data.error)}`);
+        }
+
+        this.logger.log(`[InstagramService] DM sent successfully to ${instagramUserId}`);
+        return true;
+      });
+    } catch (error: any) {
+      this.logger.error(`[InstagramService] sendDM final delivery failed: ${error?.message ?? error}`);
+      return false;
+    }
   }
 
   /**
    * Public reply to a comment (used by workflow engine when publicReply is configured).
    */
   async replyToComment(
-    _accessToken: string,
-    _commentId: string,
-    _text: string,
+    accessToken: string,
+    commentId: string,
+    text: string,
   ): Promise<boolean> {
-    this.logger.warn(
-      '[InstagramService] replyToComment called, but not implemented yet.',
-    );
-    return false;
+    if (!accessToken || !commentId || !text) {
+      this.logger.warn('[InstagramService] Missing required fields for replyToComment');
+      return false;
+    }
+
+    const url = `https://graph.instagram.com/v21.0/${commentId}/replies`;
+    const payload = {
+      message: text,
+    };
+
+    try {
+      return await withRetry(async () => {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(`Meta Graph API error: ${res.statusText} (${JSON.stringify(body)})`);
+        }
+
+        const data: any = await res.json();
+        if (data?.error) {
+          throw new Error(`Meta Graph API error: ${JSON.stringify(data.error)}`);
+        }
+
+        this.logger.log(`[InstagramService] Replied to comment ${commentId} successfully`);
+        return true;
+      });
+    } catch (error: any) {
+      this.logger.error(`[InstagramService] replyToComment final delivery failed: ${error?.message ?? error}`);
+      return false;
+    }
   }
 }
 

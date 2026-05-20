@@ -12,7 +12,8 @@ import {
   X, 
   Star,
   TrendingUp,
-  FileText
+  FileText,
+  ArrowLeft
 } from 'lucide-react';
 
 interface Message {
@@ -46,18 +47,18 @@ const initialConversations: Conversation[] = [
     name: 'Aarav Mehta',
     username: 'aarav.mehta',
     platform: 'instagram',
-    lastMessage: 'Price kitna hai is courses ka?',
+    lastMessage: 'How much does this course cost?',
     lastMessageTime: '5m ago',
     unreadCount: 1,
     aiActive: true,
     status: 'open',
     leadScore: 85,
-    notes: 'Premium package khareedne me interested lag raha hai. Video editing tools ke baare me pucha.',
+    notes: 'Interested in purchasing the premium package. Asked about video editing tools.',
     tags: ['Hot Lead', 'Course Inquiry', 'Instagram DM'],
     messages: [
       { id: 'm1', content: 'Hello, your profile looks great!', direction: 'inbound', sentAt: '10:30 AM' },
       { id: 'm2', content: 'Thank you! AutoFlow helps creators automate their engagement.', direction: 'outbound', sentAt: '10:32 AM' },
-      { id: 'm3', content: 'Nice, price kitna hai is courses ka?', direction: 'inbound', sentAt: '5m ago' }
+      { id: 'm3', content: 'Nice, how much does this course cost?', direction: 'inbound', sentAt: '5m ago' }
     ]
   },
   {
@@ -74,8 +75,8 @@ const initialConversations: Conversation[] = [
     notes: 'Creator with 50k followers. Looking for dynamic triggers for comment-to-DM.',
     tags: ['Creator', 'Highly Active', 'Partner Potential'],
     messages: [
-      { id: 'm4', content: 'Maine post par comment kiya tha.', direction: 'inbound', sentAt: '11:15 AM' },
-      { id: 'm5', content: 'Haan Priya! Comment-to-DM trigger successfully initiate hua tha.', direction: 'outbound', isAiGenerated: true, sentAt: '11:15 AM' },
+      { id: 'm4', content: 'I commented on your post.', direction: 'inbound', sentAt: '11:15 AM' },
+      { id: 'm5', content: 'Yes Priya! The comment-to-DM trigger was successfully initiated.', direction: 'outbound', isAiGenerated: true, sentAt: '11:15 AM' },
       { id: 'm6', content: 'Check your DM automation, wow working perfectly!', direction: 'inbound', sentAt: '30m ago' }
     ]
   },
@@ -107,6 +108,7 @@ export default function InboxPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [newTagInput, setNewTagInput] = useState<string>('');
   const [isTypingSimulated, setIsTypingSimulated] = useState<boolean>(false);
+  const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const selectedConv = conversations.find(c => c.id === selectedConvId) || conversations[0];
@@ -146,7 +148,7 @@ export default function InboxPage() {
         setIsTypingSimulated(false);
         const aiMessage: Message = {
           id: `m-ai-${Date.now()}`,
-          content: `🤖 [AI Auto-Reply]: Ji bilkul! Humare standard packages free se shuru hote hain jisme 500 DMs per month include hain. Premium features ke liye aap humara workflows builder dashboard use kar sakte hain!`,
+          content: `🤖 [AI Auto-Reply]: Absolutely! Our standard packages start for free and include 500 DMs per month. For premium features, you can upgrade via the workflows builder dashboard.`,
           direction: 'outbound',
           isAiGenerated: true,
           sentAt: 'Just now'
@@ -217,6 +219,11 @@ export default function InboxPage() {
     }));
   };
 
+  const handleSelectConversation = (id: string) => {
+    setSelectedConvId(id);
+    setMobileView('chat');
+  };
+
   const filteredConversations = conversations.filter(c => 
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.username.toLowerCase().includes(searchQuery.toLowerCase())
@@ -231,7 +238,7 @@ export default function InboxPage() {
             <MessageCircle className="text-white" size={18} />
             Live Automation Inbox
           </h1>
-          <p className="text-[11px] text-[#A0A0A0] mt-1 font-light">Instant message monitoring aur dynamic lead score tracking workspace.</p>
+          <p className="text-[11px] text-[#A0A0A0] mt-1 font-light">Instant message monitoring and dynamic lead score tracking workspace.</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[10px] uppercase tracking-wider bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] text-white font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 select-none">
@@ -245,13 +252,17 @@ export default function InboxPage() {
       <div className="flex-1 flex overflow-hidden">
         
         {/* Pane 1: Conversations List */}
-        <div className="w-80 bg-[#0F0F0F] border-r border-[rgba(255,255,255,0.08)] flex flex-col overflow-hidden shrink-0">
+        <div className={`
+          ${mobileView === 'list' ? 'flex' : 'hidden'}
+          md:flex w-full md:w-72 flex-shrink-0
+          border-r border-gray-800 flex-col h-full bg-[#0F0F0F] overflow-hidden
+        `}>
           <div className="p-4 border-b border-[rgba(255,255,255,0.06)] shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-2.5 text-[#606060]" size={14} />
               <input
                 type="text"
-                placeholder="Search leads, chats..."
+                placeholder="Search conversations..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-[#606060] focus:outline-none focus:border-white transition-colors"
@@ -265,7 +276,7 @@ export default function InboxPage() {
               return (
                 <div
                   key={conv.id}
-                  onClick={() => setSelectedConvId(conv.id)}
+                  onClick={() => handleSelectConversation(conv.id)}
                   className={`p-4 cursor-pointer flex items-start gap-3 transition-colors ${
                     isSelected ? 'bg-[#141414] border-l-2 border-white' : 'hover:bg-[#141414]/40'
                   }`}
@@ -313,18 +324,28 @@ export default function InboxPage() {
 
             {filteredConversations.length === 0 && (
               <div className="p-8 text-center text-[#606060] text-xs font-light">
-                Koi chat nahi mili.
+                No chats found.
               </div>
             )}
           </div>
         </div>
 
         {/* Pane 2: Conversation View */}
-        <div className="flex-1 bg-black flex flex-col overflow-hidden">
+        <div className={`
+          ${mobileView === 'chat' ? 'flex' : 'hidden'}
+          md:flex flex-1 flex-col min-w-0 bg-black
+        `}>
           
           {/* Chat Pane Header */}
           <div className="bg-[#0F0F0F]/80 border-b border-[rgba(255,255,255,0.08)] px-6 py-3.5 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-3 min-w-0">
+              <button
+                type="button"
+                className="md:hidden text-gray-400 mr-2 hover:text-white"
+                onClick={() => setMobileView('list')}
+              >
+                <ArrowLeft size={20} />
+              </button>
               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center font-bold text-white text-xs shrink-0 select-none uppercase">
                 {selectedConv.name.charAt(0)}
               </div>
@@ -339,6 +360,7 @@ export default function InboxPage() {
                 <Sparkles size={12} className={selectedConv.aiActive ? 'text-white' : 'text-[#606060]'} />
                 <span className="text-[11px] font-semibold text-[#A0A0A0] select-none">AI Auto-Reply</span>
                 <button
+                  type="button"
                   onClick={() => toggleAiState(selectedConv.id)}
                   className={`w-7 h-3.5 rounded-full p-0.5 transition-colors duration-150 focus:outline-none ${
                     selectedConv.aiActive ? 'bg-white' : 'bg-[#141414] border border-[rgba(255,255,255,0.12)]'
@@ -356,7 +378,7 @@ export default function InboxPage() {
           <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-black">
             <div className="text-center py-2 shrink-0">
               <span className="text-[9px] bg-[#0F0F0F] border border-[rgba(255,255,255,0.06)] text-[#606060] px-3 py-1 rounded-full font-medium uppercase tracking-wide">
-                Instagram Conversation Initiated
+                Conversation Started
               </span>
             </div>
 
@@ -416,7 +438,7 @@ export default function InboxPage() {
                 type="text"
                 value={inputText}
                 onChange={e => setInputText(e.target.value)}
-                placeholder={selectedConv.aiActive ? "Type here, or let AI auto-respond on send..." : "Type your message..."}
+                placeholder="Type a message..."
                 className="flex-1 bg-[#141414] border border-[rgba(255,255,255,0.08)] focus:border-white rounded-xl px-4 py-3 text-xs focus:outline-none transition-colors text-white placeholder-[#606060]"
               />
               <button
@@ -431,7 +453,7 @@ export default function InboxPage() {
         </div>
 
         {/* Pane 3: Lead Details & CRM Card */}
-        <div className="w-80 bg-[#0F0F0F] border-l border-[rgba(255,255,255,0.08)] flex flex-col overflow-y-auto shrink-0 p-5">
+        <div className="hidden lg:flex w-72 lg:w-80 bg-[#0F0F0F] border-l border-[rgba(255,255,255,0.08)] flex-col overflow-y-auto shrink-0 p-5">
           <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2 select-none">
             <Sliders size={13} className="text-white" />
             Lead Metadata CRM
@@ -446,7 +468,7 @@ export default function InboxPage() {
             <p className="text-[10px] text-[#606060] mt-1">@{selectedConv.username}</p>
 
             <div className="mt-4 pt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between">
-              <span className="text-[9px] text-[#A0A0A0] font-semibold uppercase">Platform:</span>
+              <span className="text-[9px] text-[#A0A0A0] font-semibold uppercase">Platform</span>
               <span className="text-[10px] text-white font-bold flex items-center gap-1">
                 <Instagram size={11} /> Instagram DM
               </span>
@@ -473,12 +495,14 @@ export default function InboxPage() {
             {/* Score controller */}
             <div className="flex justify-between gap-2">
               <button 
+                type="button"
                 onClick={() => updateLeadScore(selectedConv.id, selectedConv.leadScore - 5)}
                 className="flex-1 bg-black hover:bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] text-white text-[10px] py-1.5 rounded-lg font-semibold transition-colors duration-150"
               >
                 -5 Score
               </button>
               <button 
+                type="button"
                 onClick={() => updateLeadScore(selectedConv.id, selectedConv.leadScore + 5)}
                 className="flex-1 bg-black hover:bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] text-white text-[10px] py-1.5 rounded-lg font-semibold transition-colors duration-150"
               >
@@ -496,7 +520,7 @@ export default function InboxPage() {
               rows={3}
               value={selectedConv.notes}
               onChange={e => updateNotes(selectedConv.id, e.target.value)}
-              placeholder="Lead details aur observations yahan add karein..."
+              placeholder="Add lead notes..."
               className="bg-black border border-[rgba(255,255,255,0.08)] rounded-lg p-2.5 text-xs text-white placeholder-[#606060] focus:outline-none focus:border-white transition-colors resize-none leading-relaxed font-light"
             />
           </div>
@@ -504,7 +528,7 @@ export default function InboxPage() {
           {/* Interactive Tags list */}
           <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-4 flex flex-col">
             <div className="text-[11px] font-semibold text-[#A0A0A0] mb-3 flex items-center gap-1.5 select-none">
-              <Star size={12} className="text-white" /> Custom Lead Tags
+              <Star size={12} className="text-white" /> Custom Tags
             </div>
 
             {/* Tags wrapper */}
@@ -516,6 +540,7 @@ export default function InboxPage() {
                 >
                   {tag}
                   <button 
+                    type="button"
                     onClick={() => handleRemoveTag(tag)}
                     className="text-[#606060] hover:text-red-400 transition-colors"
                   >

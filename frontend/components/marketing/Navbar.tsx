@@ -67,7 +67,7 @@ export default function Navbar() {
             href="/signup"
             className="bg-white hover:bg-neutral-200 text-black text-xs font-semibold px-5 py-2.5 rounded-full transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-sm"
           >
-            Free Shuru Karo <span>→</span>
+            Start Free <span>→</span>
           </Link>
         </div>
 
@@ -106,7 +106,7 @@ export default function Navbar() {
             className="bg-white hover:bg-neutral-200 text-black text-xs font-semibold px-4 py-3 rounded-full text-center mt-2 transition-all duration-150 active:scale-95"
             onClick={() => setMenuOpen(false)}
           >
-            Free Shuru Karo →
+            Start Free →
           </Link>
         </div>
       )}

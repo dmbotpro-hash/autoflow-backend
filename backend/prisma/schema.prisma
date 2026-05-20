@@ -36,7 +36,12 @@ model Workspace {
   id        String   @id @default(uuid())
   name      String
   slug      String   @unique
-  plan      String   @default("free")
+  plan                   Plan               @default(FREE)
+  subscriptionStatus     SubscriptionStatus @default(TRIAL)
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?
+  subscriptionExpiresAt  DateTime?
+  monthlyMessageCount    Int                @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
@@ -185,5 +190,19 @@ model ChatLog {
   message   String
   aiReply   String
   createdAt DateTime @default(now())
+}
+
+enum Plan {
+  FREE
+  PRO
+  AGENCY
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
 }
 

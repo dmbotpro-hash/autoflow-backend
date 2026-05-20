@@ -32,6 +32,11 @@ import { WorkflowsModule } from './modules/workflows/workflows.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { AIModule } from './modules/ai/ai.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
+import { BillingModule } from './modules/billing/billing.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -46,8 +51,16 @@ import { ContactsModule } from './modules/contacts/contacts.module';
     MessagesModule,
     AIModule,
     ContactsModule,
+    BillingModule,
+    AnalyticsModule,
   ],
-  providers: [PrismaService],
+  providers: [
+    PrismaService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
 

@@ -1,20 +1,17 @@
-/**
- * FILE: analytics.controller.ts
- * PURPOSE: Exposes endpoints for retrieving analytics and usage statistics
- * 
- * DEPENDENCIES:
- * - NestJS Controller decorators
- * - AnalyticsService
- * 
- * EXPORTS:
- * - AnalyticsController class
- * 
- * NEXT SESSION INSTRUCTION:
- * - Define dashboard endpoints for key analytics metrics.
- */
+import { Controller, Get, Param, Logger } from '@nestjs/common';
+import { AnalyticsService, WorkspaceDashboardStats } from './analytics.service';
 
-// Imports will go here
+@Controller('analytics')
 export class AnalyticsController {
-  // Implementation pending
-}
+  private readonly logger = new Logger(AnalyticsController.name);
 
+  constructor(private readonly analyticsService: AnalyticsService) {}
+
+  @Get(':workspaceId')
+  async getDashboardStats(
+    @Param('workspaceId') workspaceId: string,
+  ): Promise<WorkspaceDashboardStats> {
+    this.logger.log(`Fetching dashboard stats for workspaceId: ${workspaceId}`);
+    return this.analyticsService.getWorkspaceDashboardStats(workspaceId);
+  }
+}

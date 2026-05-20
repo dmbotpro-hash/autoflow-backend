@@ -23,6 +23,7 @@ import { WorkflowEngineService } from '../workflows/workflow-engine.service';
 import { InstagramService } from './instagram.service';
 import { MessagesGateway } from '../messages/messages.gateway';
 import { AiService } from '../ai/ai.service';
+import { FaqService } from '../faq/faq.service';
 
 import { Injectable } from '@nestjs/common';
 
@@ -39,6 +40,7 @@ export class WebhookService {
     private instagramService: InstagramService,
     private messagesGateway: MessagesGateway,
     private aiService: AiService,
+    private faqService: FaqService,
   ) {}
 
   // Main entry point — Meta se aane wale webhook events process karta hai
@@ -239,6 +241,51 @@ export class WebhookService {
 
       const messageText = msg.message.text;
 
+      // FAQ INTERCEPTOR
+      const faqAnswer = await this.faqService.getAnswer(messageText);
+      if (faqAnswer) {
+        this.logger.log(`FAQ Interceptor matched! Replying with predefined answer.`);
+
+        const dmSent = await this.instagramService.sendDM(
+          socialAccount.accessToken,
+          senderId,
+          faqAnswer,
+        );
+
+        if (!dmSent) {
+          this.logger.warn('FAQ DM send failed');
+          return;
+        }
+
+        const outboundFaqMsg = await this.prisma.message.create({
+          data: {
+            conversationId: conversation.id,
+            direction: 'outbound',
+            content: faqAnswer,
+            isAiGenerated: false,
+          },
+        });
+
+        await this.prisma.usageLog.create({
+          data: {
+            workspaceId: socialAccount.workspaceId,
+            type: 'faq_intercept',
+            count: 1,
+          },
+        });
+
+        this.messagesGateway.emitNewMessage(socialAccount.workspaceId, conversation.id, {
+          id: outboundFaqMsg.id,
+          content: outboundFaqMsg.content,
+          direction: 'outbound',
+          sentAt: new Date(),
+          isAiGenerated: false,
+        });
+
+        this.logger.log('FAQ intercept reply sent successfully.');
+        return; // Stop execution (Do not call AI service)
+      }
+
       // Intent detect karo
       const intentResult = await this.aiService.detectIntent(messageText);
       this.logger.log(
@@ -307,6 +354,14 @@ Language: Hindi/English mix preferred
           direction: 'outbound',
           content: aiResult.reply,
           isAiGenerated: true,
+        },
+      });
+
+      await this.prisma.usageLog.create({
+        data: {
+          workspaceId: socialAccount.workspaceId,
+          type: 'ai_reply',
+          count: 1,
         },
       });
 

@@ -7,7 +7,7 @@ const testimonials = [
     name: 'Priya Sharma',
     handle: '@priyafashion',
     avatar: 'P',
-    text: 'Pehle manually har comment ka reply karna padta tha. Ab AutoFlow sab handle karta hai. Mere DMs 10x badh gaye hain!',
+    text: 'I used to reply to every comment manually. Now AutoFlow handles everything automatically. My DMs have grown 10x!',
     role: 'Fashion Creator, Mumbai',
     avatarBg: 'bg-gradient-to-tr from-pink-500 to-rose-500',
   },
@@ -15,7 +15,7 @@ const testimonials = [
     name: 'Rahul Gupta',
     handle: '@rahulcooks',
     avatar: 'R',
-    text: 'Setup mein sirf 5 minute lage. Ab jab bhi koi "RECIPE" comment karta hai, usse turant link mil jaata hai. Bahut kamaal!',
+    text: 'Setup took only 5 minutes. Now, whenever someone comments "RECIPE", they get the link instantly. Absolutely amazing!',
     role: 'Food Blogger, Delhi',
     avatarBg: 'bg-gradient-to-tr from-purple-500 to-indigo-500',
   },
@@ -23,7 +23,7 @@ const testimonials = [
     name: 'Sneha Patel',
     handle: '@sneha.boutique',
     avatar: 'S',
-    text: 'ManyChat bahut mehenga tha. AutoFlow same features deta hai ₹999 mein. Indian business ke liye perfect solution.',
+    text: 'ManyChat was too expensive. AutoFlow offers the same features at a fraction of the cost. The perfect solution for local businesses.',
     role: 'Boutique Owner, Ahmedabad',
     avatarBg: 'bg-gradient-to-tr from-orange-500 to-amber-500',
   },
@@ -51,7 +51,7 @@ export default function TestimonialsSection() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="text-white text-3xl sm:text-[32px] font-semibold leading-[1.25] tracking-tight mt-3 mb-4 font-sans"
           >
-            Creators Kya Kehte Hain
+            What Creators Say
           </motion.h2>
           <motion.div 
             initial={{ opacity: 0 }}

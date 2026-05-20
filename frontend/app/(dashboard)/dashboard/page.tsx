@@ -1,8 +1,8 @@
 'use client';
-
-import { useState } from 'react';
-
-import { MessageSquare, Users, Zap, TrendingUp, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { MessageSquare, Users, Zap, TrendingUp, ArrowUpRight, Plus } from 'lucide-react';
+import Link from 'next/link';
+import api from '@/lib/api/auth.api';
 import ActivityChart from '@/components/dashboard/ActivityChart';
 
 interface Stats {
@@ -13,113 +13,131 @@ interface Stats {
 }
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<Stats>({
-    totalMessages: 0,
-    totalContacts: 0,
-    activeConversations: 0,
-    automationCount: 0,
-  });
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fresh account empty state: real data will replace these values once backend integration is wired.
-
+  useEffect(() => {
+    api.get('/messages/stats')
+      .then((res) => setStats(res.data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
   const cards = [
     {
       label: 'Messages Sent',
       value: stats?.totalMessages ?? 0,
       icon: MessageSquare,
+      color: 'text-orange-400',
+      bg: 'bg-orange-500/10',
+      border: 'border-orange-500/20',
+      change: '+12%',
+      changePositive: true,
     },
     {
-      label: 'Total Leads Captured',
+      label: 'Total Contacts',
       value: stats?.totalContacts ?? 0,
       icon: Users,
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
+      change: '+8%',
+      changePositive: true,
     },
     {
       label: 'Active Conversations',
       value: stats?.activeConversations ?? 0,
       icon: TrendingUp,
+      color: 'text-green-400',
+      bg: 'bg-green-500/10',
+      border: 'border-green-500/20',
+      change: '+3%',
+      changePositive: true,
     },
     {
-      label: 'Active Node Automations',
+      label: 'Active Automations',
       value: stats?.automationCount ?? 0,
       icon: Zap,
+      color: 'text-purple-400',
+      bg: 'bg-purple-500/10',
+      border: 'border-purple-500/20',
+      change: 'Running',
+      changePositive: true,
     },
   ];
 
   return (
-    <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8 min-h-screen bg-black font-sans">
-      
-      {/* Page Title Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[rgba(255,255,255,0.06)] pb-6">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white font-sans">
-            System Dashboard
-          </h1>
-          <p className="text-xs text-[#A0A0A0] mt-1 font-normal">
-            Real-time dynamic monitoring console for comments and direct message automations.
+          <h1 className="text-xl md:text-2xl font-bold text-white">Dashboard</h1>
+          <p className="text-gray-500 text-sm mt-0.5">
+            Welcome back — here's what's happening
           </p>
         </div>
-
-        <div className="flex gap-2">
-          <span className="text-[10px] uppercase tracking-wider bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] text-white font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 select-none">
-            <span className="w-1.5 h-1.5 bg-[#22C55E] rounded-full animate-pulse" /> AI Processing Core Online
-          </span>
+        {/* AI Status Badge */}
+        <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-3 py-1.5 animate-fade-in">
+          <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+          <span className="text-green-400 text-xs font-medium">AI Online</span>
         </div>
       </div>
 
-      {/* Stats Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {cards.map((card) => (
-          <div 
-            key={card.label} 
-            className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-5 hover:border-[rgba(255,255,255,0.14)] transition-all duration-150"
+          <div
+            key={card.label}
+            className={`bg-gray-900 border ${card.border} rounded-xl p-5 hover:bg-gray-800/50 transition-colors`}
           >
-            <div className="w-10 h-10 bg-[#141414] border border-[rgba(255,255,255,0.06)] rounded-xl flex items-center justify-center mb-4">
-              <card.icon size={16} className="text-white" />
+            <div className="flex items-center justify-between mb-3">
+              <div className={`w-9 h-9 ${card.bg} rounded-lg flex items-center justify-center`}>
+                <card.icon size={18} className={card.color} />
+              </div>
+              <span className={`text-xs font-medium ${card.changePositive ? 'text-green-400' : 'text-red-400'}`}>
+                {card.change}
+              </span>
             </div>
-            <div className="text-3xl font-bold tracking-tight text-white font-sans">
-              {card.value.toLocaleString()}
+            <div className="text-2xl font-bold text-white mb-0.5">
+              {loading ? (
+                <div className="w-16 h-7 bg-gray-700 rounded animate-pulse" />
+              ) : (
+                card.value.toLocaleString()
+              )}
             </div>
-
-            <div className="text-[#A0A0A0] text-xs mt-2 font-medium">{card.label}</div>
+            <div className="text-gray-500 text-xs">{card.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Charts module section (fresh-account empty state) */}
-      <div className="grid grid-cols-1 gap-6">
-        {stats.totalMessages === 0 ? (
-          <div className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6">
-            <h2 className="text-white font-semibold text-xs mb-2 tracking-wider uppercase opacity-80 select-none">Activity</h2>
-            <p className="text-[#606060] text-xs font-light">
-              No activity yet. When new comments and DMs arrive, analytics will appear here.
-            </p>
-          </div>
-        ) : (
-          <ActivityChart />
-        )}
+      {/* Chart */}
+      <div className="mb-6">
+        <ActivityChart />
       </div>
 
-
-      {/* Elegant Quick Actions panel */}
-      <div className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6">
-        <h2 className="text-white font-semibold text-xs mb-4 tracking-wider uppercase opacity-80 select-none">Quick Operations</h2>
+      {/* Quick Actions */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <h2 className="text-white font-semibold mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { label: 'Create New Campaign', href: '/workflows', icon: Plus },
-            { label: 'Open Conversation Inbox', href: '/inbox', icon: MessageSquare },
-            { label: 'View Leads & Contacts', href: '/contacts', icon: Users },
+            { label: 'Create New Workflow', href: '/workflows', icon: Plus, desc: 'Set up a new automation' },
+            { label: 'View Inbox', href: '/inbox', icon: MessageSquare, desc: 'Check live conversations' },
+            { label: 'View Contacts', href: '/contacts', icon: Users, desc: 'Manage your leads' },
           ].map((action) => (
-            <a
+            <Link
               key={action.label}
               href={action.href}
-              className="flex items-center gap-3 bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-3.5 transition-all duration-150 hover:border-[rgba(255,255,255,0.14)] hover:bg-[#1A1A1A]"
+              className="flex items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 rounded-xl px-4 py-3.5 transition-all group"
             >
-              <div className="w-8 h-8 rounded-lg bg-black border border-[rgba(255,255,255,0.06)] flex items-center justify-center text-white">
-                <action.icon size={14} />
+              <div className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/20 transition-colors">
+                <action.icon size={15} className="text-gray-400 group-hover:text-orange-400 transition-colors" />
               </div>
-              <span className="text-white text-xs font-semibold">{action.label}</span>
-            </a>
+              <div className="min-w-0">
+                <div className="text-white text-sm font-medium truncate">{action.label}</div>
+                <div className="text-gray-500 text-xs truncate">{action.desc}</div>
+              </div>
+              <ArrowUpRight size={14} className="text-gray-600 ml-auto flex-shrink-0 group-hover:text-gray-400 transition-colors" />
+            </Link>
           ))}
         </div>
       </div>

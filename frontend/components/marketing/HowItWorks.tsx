@@ -5,18 +5,18 @@ import { motion } from 'framer-motion';
 const steps = [
   {
     number: '01',
-    title: 'Instagram Connect Karo',
-    desc: 'Meta OAuth se ek click mein connect karo. Koi password share nahi karna. Business aur Creator accounts dono kaam karte hain.',
+    title: 'Connect Instagram',
+    desc: 'Connect in one click using Meta OAuth. No password sharing required. Works for both Creator and Business accounts.',
   },
   {
     number: '02',
-    title: 'Keyword Aur Message Set Karo',
-    desc: 'Ek trigger word choose karo jaise "PRICE" ya "LINK". Wo message likho jo automatically jaayega. Apna link, offer, ya discount dalo.',
+    title: 'Set Keyword & Message',
+    desc: 'Choose a trigger keyword like "PRICE" or "LINK", then customize your automated response with your link, offer, or discount code.',
   },
   {
     number: '03',
-    title: 'Har Comment DM Ban Jaata Hai',
-    desc: 'Koi bhi aapka keyword comment kare — AutoFlow seconds mein DM bhej deta hai. Reels, Stories, feed posts pe. 24/7 chalta rehta hai.',
+    title: 'Watch Comments Turn into DMs',
+    desc: 'As soon as anyone comments your keyword, AutoFlow sends an automated DM in seconds. Works for Reels, Stories, and posts 24/7.',
   },
 ];
 

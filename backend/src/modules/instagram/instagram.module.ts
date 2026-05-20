@@ -15,12 +15,14 @@ import { AIModule } from '../ai/ai.module';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { WorkflowsModule } from '../workflows/workflows.module';
 import { PrismaService } from '../../prisma.service';
+import { FaqModule } from '../faq/faq.module';
 
 @Module({
   imports: [
     HttpModule, 
     MessagesModule, 
     AIModule, 
+    FaqModule,
     PrismaModule,
     forwardRef(() => WorkflowsModule) // 👈 Circular dependency fix ki
   ],

@@ -29,14 +29,14 @@ export default function SignupPage() {
             </span>
           </Link>
           <p className="text-[#A0A0A0] text-sm">
-            Instagram automation shuru karo — bilkul free
+            Start Instagram automation — completely free
           </p>
         </div>
 
         {/* Form Card */}
         <div className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
           <h2 className="text-lg font-semibold text-white mb-6 tracking-wide font-sans">
-            Account Banao
+            Create Account
           </h2>
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-3 mb-5 text-xs">
@@ -47,14 +47,14 @@ export default function SignupPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-semibold text-[#A0A0A0] mb-1.5 uppercase tracking-wider">
-                Aapka Naam
+                Full Name
               </label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="w-full bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-3 text-sm text-white placeholder-[#606060] focus:outline-none focus:border-white transition-colors"
-                placeholder="Rahul Sharma"
+                placeholder="John Doe"
                 required
                 minLength={2}
               />
@@ -69,7 +69,7 @@ export default function SignupPage() {
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 className="w-full bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-3 text-sm text-white placeholder-[#606060] focus:outline-none focus:border-white transition-colors"
-                placeholder="aap@example.com"
+                placeholder="you@example.com"
                 required
               />
             </div>
@@ -94,17 +94,17 @@ export default function SignupPage() {
               disabled={isLoading}
               className="w-full bg-white text-black hover:opacity-88 disabled:opacity-50 font-semibold rounded-full px-4 py-3.5 text-sm transition-opacity mt-2 duration-150 active:scale-95 shadow-sm"
             >
-              {isLoading ? 'Account ban raha hai...' : 'Shuru Karo — Free Mein →'}
+              {isLoading ? 'Creating account...' : 'Start Free Trial →'}
             </button>
           </form>
 
           <p className="text-center text-[#606060] text-xs mt-6">
-            Pehle se account hai?{' '}
+            Already have an account?{' '}
             <Link
               href="/login"
               className="text-white hover:underline transition-colors font-medium ml-0.5"
             >
-              Login karo
+              Log in
             </Link>
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function SignupPage() {
           ))}
         </div>
         <p className="text-center text-[#606060] text-[11px] mt-4 font-light">
-          Credit card nahi chahiye • Kabhi bhi cancel karo
+          No credit card required • Cancel anytime
         </p>
       </div>
     </div>

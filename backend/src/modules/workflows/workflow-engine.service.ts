@@ -17,6 +17,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InstagramService } from '../instagram/instagram.service';
+import { SubscriptionService } from '../billing/subscription.service';
 
 interface CommentTriggerPayload {
   workspaceId: string;
@@ -36,6 +37,7 @@ export class WorkflowEngineService {
   constructor(
     private prisma: PrismaService,
     private instagramService: InstagramService,
+    private subscriptionService: SubscriptionService,
   ) {}
 
   async handleCommentTrigger(payload: CommentTriggerPayload) {
@@ -46,6 +48,18 @@ export class WorkflowEngineService {
 
     if (!payload?.workspaceId) {
       this.logger.warn('[WorkflowEngineService] Missing workspaceId in payload');
+      return;
+    }
+
+    const canProcess = await this.subscriptionService.canProcessMessage(payload.workspaceId);
+    if (!canProcess) {
+      this.logger.warn(`[Subscription] Limit reached or expired for workspaceId ${payload.workspaceId}`);
+      return;
+    }
+
+    const spam = await this.isSpam(payload.workspaceId, payload.commenterId);
+    if (spam) {
+      this.logger.warn(`[Anti-Spam] Cooldown active for commenterId ${payload.commenterId}`);
       return;
     }
 
@@ -117,11 +131,18 @@ export class WorkflowEngineService {
       await this.delay(config.delaySeconds * 1000);
     }
 
-    const dmSent = await this.instagramService.sendDM(
-      payload.accessToken,
-      payload.commenterId,
-      config.dmMessage,
-    );
+    let dmSent = false;
+    try {
+      dmSent = await this.instagramService.sendDM(
+        payload.accessToken,
+        payload.commenterId,
+        config.dmMessage,
+      );
+    } catch (err: any) {
+      this.logger.error(
+        `[WorkflowEngineService] Final delivery failed after 3 retries for commenterId=${payload.commenterId}: ${err?.message ?? err}`,
+      );
+    }
 
     if (!dmSent) {
       this.logger.warn(`[WorkflowEngineService] DM send failed commenterId=${payload.commenterId}`);
@@ -135,13 +156,21 @@ export class WorkflowEngineService {
       commenterId: payload.commenterId,
     });
 
+    await this.subscriptionService.incrementMessageCount(payload.workspaceId);
+
     if (config.publicReply && config.publicReply.trim()) {
-      await this.instagramService.replyToComment(
-        payload.accessToken,
-        payload.commentId,
-        config.publicReply.trim(),
-      );
-      this.logger.log(`[WorkflowEngineService] Public reply posted commentId=${payload.commentId}`);
+      try {
+        await this.instagramService.replyToComment(
+          payload.accessToken,
+          payload.commentId,
+          config.publicReply.trim(),
+        );
+        this.logger.log(`[WorkflowEngineService] Public reply posted commentId=${payload.commentId}`);
+      } catch (err: any) {
+        this.logger.error(
+          `[WorkflowEngineService] Public reply final delivery failed: ${err?.message ?? err}`,
+        );
+      }
     }
   }
 
@@ -230,6 +259,29 @@ export class WorkflowEngineService {
       });
     } catch (err: any) {
       this.logger.error(`[WorkflowEngineService] logUsage failed: ${err?.message ?? err}`);
+    }
+  }
+
+  async isSpam(workspaceId: string, commenterId: string): Promise<boolean> {
+    try {
+      const sixtySecondsAgo = new Date(Date.now() - 60000);
+      const log = await this.prisma.usageLog.findFirst({
+        where: {
+          workspaceId,
+          type: 'message_sent',
+          createdAt: {
+            gte: sixtySecondsAgo,
+          },
+          metadata: {
+            path: ['commenterId'],
+            equals: commenterId,
+          },
+        },
+      });
+      return !!log;
+    } catch (err: any) {
+      this.logger.error(`[Anti-Spam] isSpam check failed: ${err?.message ?? err}`);
+      return false; // Fail-open
     }
   }
 

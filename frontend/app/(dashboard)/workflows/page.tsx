@@ -60,7 +60,7 @@ export default function WorkflowsPage() {
     }));
   };
 
-  const handleDeleteWorkflow = (id: string, e: MouseEvent) => {
+  const handleDeleteWorkflow = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setWorkflows(prev => prev.filter(w => w.id !== id));
     if (selectedWorkflowId === id) {
@@ -137,7 +137,7 @@ export default function WorkflowsPage() {
           onClick={() => setIsDrawerOpen(true)}
           className="bg-white hover:opacity-88 active:scale-95 text-black font-semibold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 transition-all shadow-sm select-none"
         >
-          <Plus size={14} /> Naya Workflow Banao
+          <Plus size={14} /> New Workflow
         </button>
       </div>
 
@@ -233,7 +233,7 @@ export default function WorkflowsPage() {
 
           {workflows.length === 0 && (
             <div className="text-center py-12 border border-dashed border-[rgba(255,255,255,0.08)] rounded-2xl text-[#606060] text-xs font-light">
-              Abhi tak koi automation nahi banayi. Click upper right to start.
+              No automations created yet. Click upper right to start.
             </div>
           )}
         </div>
@@ -331,7 +331,7 @@ export default function WorkflowsPage() {
             <div className="flex justify-between items-center mb-6 border-b border-[rgba(255,255,255,0.06)] pb-4 shrink-0">
               <div className="flex items-center gap-2 select-none">
                 <Sparkles className="text-white" size={18} />
-                <h2 className="text-base font-bold text-white">Naya Campaign Setup Karein</h2>
+                <h2 className="text-base font-bold text-white">Setup New Campaign</h2>
               </div>
               <button 
                 onClick={() => setIsDrawerOpen(false)}
@@ -359,13 +359,13 @@ export default function WorkflowsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider mb-2 select-none">
-                  1. Trigger Type (Kab chalega?)
+                  1. Trigger Type (When should it trigger?)
                 </label>
                 <div className="grid grid-cols-3 gap-2.5 select-none">
                   {[
-                    { type: 'comment', label: 'Comment', icon: MessageSquare, desc: 'Post par comment' },
-                    { type: 'dm', label: 'Direct DM', icon: Sparkles, desc: 'Inbox mein DM' },
-                    { type: 'follow', label: 'Follow', icon: CheckCircle, desc: 'Naya Follower' }
+                    { type: 'comment', label: 'Comment', icon: MessageSquare, desc: 'Comment on post' },
+                    { type: 'dm', label: 'Direct DM', icon: Sparkles, desc: 'DM in inbox' },
+                    { type: 'follow', label: 'Follow', icon: CheckCircle, desc: 'New follower' }
                   ].map(opt => (
                     <div
                       key={opt.type}
@@ -390,7 +390,7 @@ export default function WorkflowsPage() {
               {newTriggerType !== 'follow' && (
                 <div>
                   <label className="block text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider mb-2 select-none">
-                    {newTriggerType === 'comment' ? 'Keyword kya hoga?' : 'Incoming keyword filter (Optional)'}
+                    {newTriggerType === 'comment' ? 'What is the keyword?' : 'Incoming keyword filter (Optional)'}
                   </label>
                   <input
                     type="text"
@@ -401,14 +401,14 @@ export default function WorkflowsPage() {
                     className="w-full bg-black border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-3 text-xs text-white placeholder-[#606060] focus:outline-none focus:border-white transition-colors"
                   />
                   <p className="text-[10px] text-[#606060] mt-2 leading-relaxed font-light select-none">
-                    User jab ye word comment/message karega, tabhi automation trigger hoga.
+                    The automation will trigger when a user comments or messages this specific keyword.
                   </p>
                 </div>
               )}
 
               <div>
                 <label className="block text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider mb-2 select-none">
-                  2. Response Action (DM me kya send karein?)
+                  2. Response Action (What message to send in DM?)
                 </label>
                 <textarea
                   rows={4}

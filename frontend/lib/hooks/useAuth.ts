@@ -70,7 +70,10 @@ export function useAuth() {
     }
   };
 
+  const user = useAuthStore((state) => state.user);
+
   return {
+    user,
     login,
     register,
     logout,

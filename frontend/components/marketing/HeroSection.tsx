@@ -25,7 +25,7 @@ export default function HeroSection() {
 
           {/* Subtext with Staggered Slow Text Reveal */}
           <p className="text-[#A0A0A0] text-base sm:text-lg leading-relaxed max-w-[500px] mb-8 font-normal animate-text-reveal-slow opacity-0 [animation-fill-mode:forwards] [animation-delay:150ms]">
-            Koi bhi keyword comment kare — AutoFlow turant DM bhej deta hai. Leads capture karo, sales badhao. 24/7 automatic.
+            Whenever a user comments your keyword, AutoFlow instantly sends them a DM. Capture leads, boost sales automatically 24/7.
           </p>
 
           {/* CTA Buttons with Hover Micro-animations */}
@@ -34,13 +34,13 @@ export default function HeroSection() {
               href="/signup"
               className="bg-white hover:bg-neutral-200 text-black font-semibold text-sm px-6 py-3.5 rounded-full transition-all text-center flex items-center justify-center gap-1.5 active:scale-95 duration-200 hover:scale-[1.02] shadow-md shadow-white/5"
             >
-              Free Mein Shuru Karo <span>→</span>
+              Get Started for Free <span>→</span>
             </Link>
             <a
               href="#how-it-works"
               className="border border-[rgba(255,255,255,0.2)] text-white hover:bg-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.3)] font-medium text-sm px-6 py-3.5 rounded-full transition-all text-center flex items-center justify-center active:scale-95 duration-200 hover:scale-[1.02]"
             >
-              Kaise Kaam Karta Hai?
+              How it Works
             </a>
           </div>
 

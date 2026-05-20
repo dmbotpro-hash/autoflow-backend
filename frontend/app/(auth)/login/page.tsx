@@ -25,7 +25,7 @@ export default function LoginPage() {
             </span>
           </Link>
           <p className="text-[#A0A0A0] text-sm">
-            Apne account mein login karo
+            Log in to your account
           </p>
         </div>
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-3 text-sm text-white placeholder-[#606060] focus:outline-none focus:border-white transition-colors"
-                placeholder="aap@example.com"
+                placeholder="you@example.com"
                 required
               />
             </div>
@@ -62,7 +62,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-3 text-sm text-white placeholder-[#606060] focus:outline-none focus:border-white transition-colors"
-                placeholder="Aapka password"
+                placeholder="Your password"
                 required
               />
             </div>
@@ -72,17 +72,17 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full bg-white text-black hover:opacity-88 disabled:opacity-50 font-semibold rounded-full px-4 py-3.5 text-sm transition-opacity mt-2 duration-150 active:scale-95 shadow-sm"
             >
-              {isLoading ? 'Login ho raha hai...' : 'Login Karo →'}
+              {isLoading ? 'Logging in...' : 'Sign In →'}
             </button>
           </form>
 
           <p className="text-center text-[#606060] text-xs mt-6">
-            Account nahi hai?{' '}
+            Don't have an account?{' '}
             <Link
               href="/signup"
               className="text-white hover:underline transition-colors font-medium ml-0.5"
             >
-              Free mein banao
+              Sign up for free
             </Link>
           </p>
         </div>

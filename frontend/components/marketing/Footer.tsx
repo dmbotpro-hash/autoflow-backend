@@ -21,7 +21,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-[#606060] text-sm leading-relaxed max-w-xs font-normal">
-              Instagram DM automation Indian businesses ke liye. Comment-to-DM, AI replies, aur sales conversion scaling.
+              Instagram DM automation built for creators and local businesses. Comment-to-DM, AI replies, and sales conversion scaling.
             </p>
           </div>
 
@@ -79,7 +79,7 @@ export default function Footer() {
             © 2026 AutoFlow. All rights reserved.
           </div>
           <div className="text-[#404040] text-[12px] font-normal font-sans">
-            Meta Tech Provider • Indian Businesses ke liye ❤️
+            Meta Tech Provider • Built for creators and local businesses ❤️
           </div>
         </div>
       </div>
