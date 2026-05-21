@@ -2,23 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import api from '@/lib/api/auth.api';
-import { TrendingUp, Users } from 'lucide-react';
+import { TrendingUp, Users, AlertCircle } from 'lucide-react';
 
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadContacts = async () => {
     setLoading(true);
-    api
-      .get('/contacts')
-      .then((res) => setContacts(res.data ?? []))
-      .catch((e) => {
-        setError('Failed to load contacts');
-        console.error(e);
-      })
-      .finally(() => setLoading(false));
+    setError(null);
+    try {
+      const res = await api.get('/contacts');
+      setContacts(res.data ?? []);
+    } catch (e) {
+      setError('Failed to load contacts');
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadContacts();
   }, []);
 
   const getLeadBadge = (score: number) => {
@@ -28,7 +34,7 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 min-h-screen bg-black font-sans">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 min-h-screen bg-[#0A0A0F] font-sans">
       {/* Title Header */}
       <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] pb-6">
         <div>
@@ -39,7 +45,39 @@ export default function ContactsPage() {
         </div>
       </div>
 
-      {contacts.length > 0 && !loading && (
+      {loading && (
+        <div className="p-12 text-center text-gray-500 text-xs animate-pulse">Loading contacts...</div>
+      )}
+
+      {error && (
+        <div className="text-center py-16">
+          <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
+            <AlertCircle size={20} className="text-red-400" />
+          </div>
+          <p className="text-white font-medium text-sm">Unable to load contacts</p>
+          <p className="text-gray-500 text-xs mt-1 mb-4">
+            Check your backend connection
+          </p>
+          <button
+            onClick={loadContacts}
+            className="text-orange-400 text-sm hover:text-orange-300 transition-colors font-medium"
+          >
+            Try again →
+          </button>
+        </div>
+      )}
+
+      {!error && contacts.length === 0 && !loading && (
+        <div className="text-center py-16 border border-dashed border-white/10 rounded-xl">
+          <Users size={36} className="mx-auto text-gray-700 mb-3" />
+          <p className="text-white font-medium text-sm">No contacts yet</p>
+          <p className="text-gray-500 text-xs mt-1 max-w-xs mx-auto">
+            Contacts appear automatically when users interact with your automations
+          </p>
+        </div>
+      )}
+
+      {contacts.length > 0 && !loading && !error && (
         <div className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl overflow-x-auto shadow-sm">
           <table className="w-full text-left border-collapse min-w-[600px]">
             <thead className="bg-[#141414]/50 border-b border-[rgba(255,255,255,0.08)] text-[#A0A0A0] text-[10px] font-bold uppercase tracking-wider select-none">
@@ -81,26 +119,6 @@ export default function ContactsPage() {
             </tbody>
           </table>
         </div>
-      )}
-
-      {contacts.length === 0 && !loading && !error && (
-        <div className="text-center py-16 border border-dashed border-gray-800 rounded-xl">
-          <Users size={40} className="mx-auto text-gray-700 mb-3" />
-          <p className="text-white font-medium">No contacts yet</p>
-          <p className="text-gray-500 text-sm mt-1">
-            Contacts appear automatically when users interact with your automations
-          </p>
-        </div>
-      )}
-
-      {loading && (
-        <div className="p-12 text-center text-gray-500 text-xs animate-pulse">Loading contacts...</div>
-      )}
-
-      {error && (
-        <p className="text-red-400 text-sm text-center py-4">
-          Failed to load contacts. Please refresh the page.
-        </p>
       )}
     </div>
   );

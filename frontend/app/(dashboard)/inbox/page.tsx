@@ -230,7 +230,7 @@ export default function InboxPage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col bg-[#0A0A0F] text-white overflow-hidden font-sans">
       {/* Header info */}
       <div className="bg-[#0F0F0F] border-b border-[rgba(255,255,255,0.08)] px-6 py-4 flex justify-between items-center shrink-0">
         <div>
@@ -238,13 +238,13 @@ export default function InboxPage() {
             <MessageCircle className="text-white" size={18} />
             Live Automation Inbox
           </h1>
-          <p className="text-[11px] text-[#A0A0A0] mt-1 font-light">Instant message monitoring and dynamic lead score tracking workspace.</p>
+          <p className="text-[11px] text-[#A0A0A0] mt-1 font-light">All your Instagram DMs in one place — live and synchronized.</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[10px] uppercase tracking-wider bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] text-white font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 select-none">
-            <span className="w-1.5 h-1.5 bg-[#22C55E] rounded-full animate-pulse" />
-            Live Synchronized
-          </span>
+          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1.5">
+            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+            <span className="text-emerald-400 text-xs font-medium">Live</span>
+          </div>
         </div>
       </div>
 
@@ -333,7 +333,7 @@ export default function InboxPage() {
         {/* Pane 2: Conversation View */}
         <div className={`
           ${mobileView === 'chat' ? 'flex' : 'hidden'}
-          md:flex flex-1 flex-col min-w-0 bg-black
+          md:flex flex-1 flex-col min-w-0 bg-[#0A0A0F]
         `}>
           
           {/* Chat Pane Header */}
@@ -375,7 +375,7 @@ export default function InboxPage() {
           </div>
 
           {/* Chat Messages stream */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-black">
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#0A0A0F]">
             <div className="text-center py-2 shrink-0">
               <span className="text-[9px] bg-[#0F0F0F] border border-[rgba(255,255,255,0.06)] text-[#606060] px-3 py-1 rounded-full font-medium uppercase tracking-wide">
                 Conversation Started

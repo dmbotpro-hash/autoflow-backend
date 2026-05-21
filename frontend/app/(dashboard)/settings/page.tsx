@@ -87,18 +87,23 @@ export default function SettingsPage() {
     }
   };
 
-  const tones = ['Professional', 'Friendly', 'Casual', 'Sarcastic'];
+  const tones = [
+    { id: 'friendly', label: 'Friendly', emoji: '😊' },
+    { id: 'professional', label: 'Professional', emoji: '💼' },
+    { id: 'casual', label: 'Casual', emoji: '👋' },
+    { id: 'sales', label: 'Sales-Focused', emoji: '🚀' },
+  ];
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center font-sans">
+      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center font-sans">
         <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 min-h-screen bg-black text-white font-sans">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 min-h-screen bg-[#0A0A0F] text-white font-sans">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] pb-6">
         <div>
@@ -188,19 +193,20 @@ export default function SettingsPage() {
             <label className="text-xs font-semibold text-white mb-2 block select-none">Select Response Tone</label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {tones.map((tone) => {
-                const isSelected = settings.aiTone === tone;
+                const isSelected = settings.aiTone.toLowerCase() === tone.id;
                 return (
                   <button
-                    key={tone}
+                    key={tone.id}
                     type="button"
-                    onClick={() => setSettings(prev => ({ ...prev, aiTone: tone }))}
-                    className={`px-3 py-3 rounded-xl border text-xs font-semibold transition-all ${
+                    onClick={() => setSettings(prev => ({ ...prev, aiTone: tone.label }))}
+                    className={`px-3 py-3 rounded-xl border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                       isSelected
                         ? 'bg-white text-black border-white'
                         : 'bg-black border-[rgba(255,255,255,0.08)] text-gray-400 hover:text-white hover:border-gray-600'
                     }`}
                   >
-                    {tone}
+                    <span>{tone.emoji}</span>
+                    <span>{tone.label}</span>
                   </button>
                 );
               })}

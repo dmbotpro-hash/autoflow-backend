@@ -18,7 +18,7 @@ export default function Navbar() {
   const title = pageTitles[pathname] || 'AutoFlow';
 
   return (
-    <header className="h-14 border-b border-gray-800 bg-gray-950 flex items-center justify-between px-4 sticky top-0 z-10">
+    <header className="h-14 border-b border-white/5 bg-[#0A0A0F]/95 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-10">
       <h1 className="text-white font-semibold text-base ml-8 md:ml-0">{title}</h1>
       <div className="flex items-center gap-3">
         <button className="relative text-gray-400 hover:text-white transition-colors">

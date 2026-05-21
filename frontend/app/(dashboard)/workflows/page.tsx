@@ -123,21 +123,22 @@ export default function WorkflowsPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col bg-[#0A0A0F] text-white overflow-hidden font-sans">
       {/* Header bar */}
-      <div className="bg-[#0F0F0F] border-b border-[rgba(255,255,255,0.08)] px-4 py-3 flex justify-between items-center shrink-0">
+      <div className="bg-[#0F0F0F] border-b border-[rgba(255,255,255,0.08)] px-4 py-3 flex items-start justify-between gap-3 mb-6 shrink-0">
         <div>
           <h1 className="text-base font-bold text-white flex items-center gap-2 font-sans">
             <Zap className="text-white" size={18} />
             Visual Automation Builder
           </h1>
-          <p className="text-[11px] text-[#A0A0A0] mt-1 font-light">Define comment triggers, AI-powered responders, and qualification channels.</p>
+          <p className="text-[11px] text-[#A0A0A0] mt-1 font-light">Build and manage your Instagram automations.</p>
         </div>
         <button
           onClick={() => setIsDrawerOpen(true)}
-          className="bg-white hover:opacity-88 active:scale-95 text-black font-semibold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 transition-all shadow-sm select-none"
+          className="flex items-center gap-2 bg-white hover:bg-gray-100 text-black px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap flex-shrink-0"
         >
-          <Plus size={14} /> New Workflow
+          <Plus size={15} />
+          New Workflow
         </button>
       </div>
 
@@ -232,8 +233,12 @@ export default function WorkflowsPage() {
           })}
 
           {workflows.length === 0 && (
-            <div className="text-center py-12 border border-dashed border-[rgba(255,255,255,0.08)] rounded-2xl text-[#606060] text-xs font-light">
-              No automations created yet. Click upper right to start.
+            <div className="text-center py-12">
+              <Zap size={32} className="mx-auto text-gray-700 mb-3" />
+              <p className="text-gray-400 font-medium text-sm">No workflows yet</p>
+              <p className="text-gray-600 text-xs mt-1">
+                Click "New Workflow" to create your first automation
+              </p>
             </div>
           )}
         </div>

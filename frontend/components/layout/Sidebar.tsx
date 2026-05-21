@@ -23,7 +23,7 @@ export default function Sidebar() {
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      <div className="px-5 py-5 border-b border-gray-800 flex items-center justify-between">
+      <div className="px-5 py-5 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 bg-gradient-to-br from-orange-500 to-pink-600 rounded-lg flex items-center justify-center">
             <Instagram size={14} className="text-white" />
@@ -44,8 +44,8 @@ export default function Sidebar() {
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-orange-500/10 text-orange-400'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
             >
               <item.icon size={17} />
@@ -54,7 +54,7 @@ export default function Sidebar() {
           );
         })}
       </nav>
-      <div className="px-3 py-4 border-t border-gray-800">
+      <div className="px-3 py-4 border-t border-white/5">
         <div className="flex items-center gap-3 px-3 py-2 mb-2">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-pink-600 flex items-center justify-center flex-shrink-0">
             <span className="text-white text-xs font-bold">
@@ -80,7 +80,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-56 flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col h-screen sticky top-0">
+      <aside className="hidden md:flex w-56 flex-shrink-0 bg-[#0D1117] border-r border-white/5 flex-col h-screen sticky top-0">
         <SidebarContent />
       </aside>
       {/* Mobile Hamburger */}
@@ -98,7 +98,7 @@ export default function Sidebar() {
             onClick={() => setMobileOpen(false)}
           />
           <aside
-            className="md:hidden fixed left-0 top-0 h-full w-64 bg-gray-900 border-r border-gray-800 z-50 flex flex-col"
+            className="md:hidden fixed left-0 top-0 h-full w-64 bg-[#0D1117] border-r border-white/5 z-50 flex flex-col"
             style={{ animation: 'slideInLeft 0.25s ease' }}
           >
             <SidebarContent />
