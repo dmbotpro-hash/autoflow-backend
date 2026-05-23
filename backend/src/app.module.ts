@@ -1,31 +1,15 @@
-/**
- * FILE: app.module.ts
- * PURPOSE: Root NestJS module that wires together all AutoFlow backend modules
- * 
- * DEPENDENCIES:
- * - Module decorator (NestJS)
- * - AppConfig (app.config)
- * - DatabaseConfig (database.config)
- * - JwtConfig (jwt.config)
- * - Feature modules: Auth, Users, Workspaces, Instagram, Workflows, Messages, Contacts, AI, Analytics, Billing
- * 
- * EXPORTS:
- * - AppModule class
- * 
- * NEXT SESSION INSTRUCTION:
- * - Add module imports for all feature modules and initialize configuration modules.
- */
-
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
-
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { AppConfig } from './config/app.config';
+import { DatabaseConfig } from './config/database.config';
+import { JwtConfig } from './config/jwt.config';
 import { PrismaModule } from './prisma/prisma.module';
-
+import { HealthController } from './health.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
-
 import { InstagramModule } from './modules/instagram/instagram.module';
 import { WorkflowsModule } from './modules/workflows/workflows.module';
 import { MessagesModule } from './modules/messages/messages.module';
@@ -38,13 +22,15 @@ import { SearchModule } from './modules/search/search.module';
 import { SecurityModule } from './modules/security/security.module';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 
-
-import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard } from '@nestjs/throttler';
-
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+      expandVariables: true,
+      envFilePath: ['.env', '.env.local'],
+      load: [AppConfig, DatabaseConfig, JwtConfig],
+    }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     PrismaModule,
     AuthModule,
@@ -62,6 +48,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     SecurityModule,
     MarketplaceModule,
   ],
+  controllers: [HealthController],
   providers: [
     {
       provide: APP_GUARD,
@@ -70,8 +57,3 @@ import { ThrottlerGuard } from '@nestjs/throttler';
   ],
 })
 export class AppModule {}
-
-
-
-
-

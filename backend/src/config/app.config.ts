@@ -6,13 +6,16 @@
  * - process.env
  * 
  * EXPORTS:
- * - AppConfig object/function shell
- * 
- * NEXT SESSION INSTRUCTION:
- * - Implement configuration loading and validation for NODE_ENV, PORT, and APP_URL.
+ * - AppConfig object with all application configuration
  */
 
-// Imports will go here
-// export const AppConfig = ...
-export const AppConfig = {};
+export const AppConfig = () => ({
+  nodeEnv: process.env.NODE_ENV || 'development',
+  port: parseInt(process.env.PORT || '3001', 10),
+  appUrl: process.env.APP_URL || 'http://localhost:3001',
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+  isProduction: process.env.NODE_ENV === 'production',
+  isDevelopment: process.env.NODE_ENV === 'development',
+  logLevel: process.env.LOG_LEVEL || 'log',
+});
 
