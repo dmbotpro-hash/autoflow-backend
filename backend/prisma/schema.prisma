@@ -106,7 +106,7 @@ model WorkspaceMember {
   id          String    @id @default(uuid())
   userId      String
   workspaceId String
-  role        String    @default("owner")
+  role        String    @default("member")
   createdAt   DateTime  @default(now())
 
   user      User      @relation(fields: [userId], references: [id])
@@ -252,4 +252,3 @@ enum SubscriptionStatus {
   CANCELED
   EXPIRED
 }
-

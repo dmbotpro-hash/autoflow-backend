@@ -9,6 +9,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -219,15 +220,7 @@ export class AuthService {
 
       expiresAt.setDate(expiresAt.getDate() + 7);
 
-      const refreshToken = await this.prisma.refreshToken.create({
-        data: {
-          userId: user.id,
-          token: refreshTokenValue,
-          expiresAt,
-          userAgent: meta?.userAgent,
-          deviceLabel: meta?.deviceLabel ?? this.parseDevice(meta?.userAgent),
-        },
-      });
+      const refreshToken = await this.createRefreshToken(user.id, refreshTokenValue, expiresAt, meta);
 
       return {
         success: true,
@@ -263,6 +256,17 @@ export class AuthService {
     const stack = error instanceof Error ? error.stack : undefined;
 
     if (
+      this.isPrismaSchemaMismatch(error) ||
+      message.includes('P2021') ||
+      message.includes('P2022') ||
+      message.includes('column') ||
+      message.includes('does not exist')
+    ) {
+      this.logger.error(`Database schema mismatch during ${label}: ${message}`, stack);
+      throw new ServiceUnavailableException('Database schema is updating. Please try again shortly.');
+    }
+
+    if (
       message.includes('P1000') ||
       message.includes('P1001') ||
       message.includes('P1002') ||
@@ -275,5 +279,55 @@ export class AuthService {
 
     this.logger.error(`Unexpected auth error during ${label}: ${message}`, stack);
     throw new InternalServerErrorException('Authentication request failed. Please try again.');
+  }
+
+  private async createRefreshToken(
+    userId: string,
+    token: string,
+    expiresAt: Date,
+    meta?: SessionMeta,
+  ) {
+    try {
+      return await this.prisma.refreshToken.create({
+        data: {
+          userId,
+          token,
+          expiresAt,
+          userAgent: meta?.userAgent,
+          deviceLabel: meta?.deviceLabel ?? this.parseDevice(meta?.userAgent),
+        },
+      });
+    } catch (error) {
+      if (!this.isPrismaSchemaMismatch(error)) {
+        throw error;
+      }
+
+      this.logger.warn(
+        `RefreshToken metadata columns are unavailable; retrying token creation without optional fields for user ${userId}`,
+      );
+
+      return this.prisma.refreshToken.create({
+        data: {
+          userId,
+          token,
+          expiresAt,
+        },
+      });
+    }
+  }
+
+  private isPrismaSchemaMismatch(error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return error.code === 'P2021' || error.code === 'P2022';
+    }
+
+    const message = error instanceof Error ? error.message : String(error);
+    return (
+      message.includes('P2021') ||
+      message.includes('P2022') ||
+      message.includes('The table') ||
+      message.includes('The column') ||
+      message.includes('does not exist')
+    );
   }
 }
