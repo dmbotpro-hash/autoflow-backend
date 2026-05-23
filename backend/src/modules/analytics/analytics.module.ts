@@ -9,4 +9,7 @@ import { AnalyticsController } from './analytics.controller';
   providers: [AnalyticsService],
   exports: [AnalyticsService],
 })
-export class AnalyticsModule {}
+export class AnalyticsModule { }
+
+// Re-export for consumers
+export { AnalyticsService };

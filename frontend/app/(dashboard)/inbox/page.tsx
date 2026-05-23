@@ -1,222 +1,159 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { 
-  Search, 
-  Send, 
-  Instagram, 
-  Sparkles, 
-  Sliders, 
-  MessageCircle, 
-  Plus, 
-  X, 
+import { useState, useEffect, useRef, type FormEvent } from 'react';
+import {
+  Search,
+  Send,
+  Instagram,
+  Sparkles,
+  Sliders,
+  MessageCircle,
+  Plus,
+  X,
   Star,
   TrendingUp,
   FileText,
-  ArrowLeft
+  ArrowLeft,
+  Paperclip,
+  Check,
+  Loader2,
+  ChevronRight,
+  Trash2
 } from 'lucide-react';
-
-interface Message {
-  id: string;
-  content: string;
-  direction: 'inbound' | 'outbound';
-  isAiGenerated?: boolean;
-  sentAt: string;
-}
-
-interface Conversation {
-  id: string;
-  name: string;
-  username: string;
-  avatarUrl?: string;
-  platform: 'instagram';
-  lastMessage: string;
-  lastMessageTime: string;
-  unreadCount: number;
-  aiActive: boolean;
-  status: 'open' | 'closed';
-  leadScore: number;
-  notes: string;
-  tags: string[];
-  messages: Message[];
-}
-
-const initialConversations: Conversation[] = [
-  {
-    id: 'conv-1',
-    name: 'Aarav Mehta',
-    username: 'aarav.mehta',
-    platform: 'instagram',
-    lastMessage: 'How much does this course cost?',
-    lastMessageTime: '5m ago',
-    unreadCount: 1,
-    aiActive: true,
-    status: 'open',
-    leadScore: 85,
-    notes: 'Interested in purchasing the premium package. Asked about video editing tools.',
-    tags: ['Hot Lead', 'Course Inquiry', 'Instagram DM'],
-    messages: [
-      { id: 'm1', content: 'Hello, your profile looks great!', direction: 'inbound', sentAt: '10:30 AM' },
-      { id: 'm2', content: 'Thank you! AutoFlow helps creators automate their engagement.', direction: 'outbound', sentAt: '10:32 AM' },
-      { id: 'm3', content: 'Nice, how much does this course cost?', direction: 'inbound', sentAt: '5m ago' }
-    ]
-  },
-  {
-    id: 'conv-2',
-    name: 'Priya Sharma',
-    username: 'priya_creations',
-    platform: 'instagram',
-    lastMessage: 'Check your DM automation, wow working perfectly!',
-    lastMessageTime: '30m ago',
-    unreadCount: 0,
-    aiActive: true,
-    status: 'open',
-    leadScore: 92,
-    notes: 'Creator with 50k followers. Looking for dynamic triggers for comment-to-DM.',
-    tags: ['Creator', 'Highly Active', 'Partner Potential'],
-    messages: [
-      { id: 'm4', content: 'I commented on your post.', direction: 'inbound', sentAt: '11:15 AM' },
-      { id: 'm5', content: 'Yes Priya! The comment-to-DM trigger was successfully initiated.', direction: 'outbound', isAiGenerated: true, sentAt: '11:15 AM' },
-      { id: 'm6', content: 'Check your DM automation, wow working perfectly!', direction: 'inbound', sentAt: '30m ago' }
-    ]
-  },
-  {
-    id: 'conv-3',
-    name: 'Karan Malhotra',
-    username: 'karan_m',
-    platform: 'instagram',
-    lastMessage: 'Can you show me a demo?',
-    lastMessageTime: '2h ago',
-    unreadCount: 0,
-    aiActive: false,
-    status: 'open',
-    leadScore: 45,
-    notes: 'Needs live demonstration of workflow nodes connectivity.',
-    tags: ['Prospect', 'Needs Demo'],
-    messages: [
-      { id: 'm7', content: 'Hi, what is AutoFlow?', direction: 'inbound', sentAt: 'Yesterday' },
-      { id: 'm8', content: 'Hi Karan! AutoFlow is an AI automated chat manager.', direction: 'outbound', sentAt: 'Yesterday' },
-      { id: 'm9', content: 'Can you show me a demo?', direction: 'inbound', sentAt: '2h ago' }
-    ]
-  }
-];
+import { useInbox } from '@/lib/hooks/useInbox';
+import { useSocket } from '@/lib/hooks/useSocket';
+import { useInboxStore } from '@/lib/store/inbox.store';
+import { fetchConversationSummary, fetchSmartReplies } from '@/lib/api/ai.api';
+import api from '@/lib/api/auth.api';
+import type { InboxConversation } from '@/lib/inbox/mappers';
+import { EmptyState } from '@/components/empty/EmptyState';
+import { VirtualList } from '@/components/ui/VirtualList';
+import { useSwipeBack } from '@/lib/hooks/useSwipeBack';
 
 export default function InboxPage() {
-  const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
-  const [selectedConvId, setSelectedConvId] = useState<string>('conv-1');
-  const [inputText, setInputText] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [newTagInput, setNewTagInput] = useState<string>('');
-  const [isTypingSimulated, setIsTypingSimulated] = useState<boolean>(false);
+  const {
+    conversations,
+    loading,
+    error,
+    sending,
+    loadMessages,
+    sendMessage,
+    updateLocalConv,
+    updateContactCRM,
+  } = useInbox();
+
+  const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
+  const [inputText, setInputText] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [newTagInput, setNewTagInput] = useState('');
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
+
+  useSwipeBack(mobileView === 'chat', () => setMobileView('list'));
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const notesTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const selectedConv = conversations.find(c => c.id === selectedConvId) || conversations[0];
+  // Socket Connection and Emitters
+  const { emitTyping } = useSocket(selectedConvId);
 
+  // Zustand Store Selectors
+  const aiTypingConvId = useInboxStore((s) => s.aiTypingConvId);
+  const typingConvs = useInboxStore((s) => s.typingConvs);
+  const smartReplies = useInboxStore((s) => s.smartReplies);
+  const setSmartReplies = useInboxStore((s) => s.setSmartReplies);
+
+  // AI Summary State
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+
+  // CRM Autosave feedback state
+  const [crmSaving, setCrmSaving] = useState(false);
+
+  // File Attachment State (mocked upload)
+  const [attachments, setAttachments] = useState<Array<{ name: string; size: number; type: string }>>([]);
+
+  // Auto-select first conversation
+  useEffect(() => {
+    if (conversations.length && !selectedConvId) {
+      setSelectedConvId(conversations[0].id);
+    }
+  }, [conversations, selectedConvId]);
+
+  // Load message thread
+  useEffect(() => {
+    if (selectedConvId) loadMessages(selectedConvId);
+  }, [selectedConvId, loadMessages]);
+
+  const selectedConv =
+    conversations.find((c) => c.id === selectedConvId) ?? conversations[0];
+
+  // Auto scroll to bottom on new messages
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [selectedConv?.messages, isTypingSimulated]);
+  }, [selectedConv?.messages, aiTypingConvId, typingConvs]);
 
-  const handleSendMessage = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!inputText.trim()) return;
+  // Load smart replies & reset summary on conversation change
+  useEffect(() => {
+    setAiSummary(null);
+    if (!selectedConvId) return;
 
-    const userMessage: Message = {
-      id: `m-out-${Date.now()}`,
-      content: inputText,
-      direction: 'outbound',
-      sentAt: 'Just now'
+    let isCurrent = true;
+    const loadReplies = async () => {
+      try {
+        const replies = await fetchSmartReplies(selectedConvId);
+        if (isCurrent) {
+          setSmartReplies(replies);
+        }
+      } catch (err) {
+        console.error('Error fetching smart replies:', err);
+      }
     };
 
-    setConversations(prev => prev.map(c => {
-      if (c.id === selectedConv.id) {
-        return {
-          ...c,
-          lastMessage: inputText,
-          lastMessageTime: 'Just now',
-          messages: [...c.messages, userMessage]
-        };
-      }
-      return c;
-    }));
+    loadReplies();
+    return () => {
+      isCurrent = false;
+    };
+  }, [selectedConvId, setSmartReplies]);
 
-    setInputText('');
+  // Composer typing signal
+  const handleInputChange = (val: string) => {
+    setInputText(val);
+    if (!selectedConv) return;
 
-    if (selectedConv.aiActive) {
-      setIsTypingSimulated(true);
-      setTimeout(() => {
-        setIsTypingSimulated(false);
-        const aiMessage: Message = {
-          id: `m-ai-${Date.now()}`,
-          content: `🤖 [AI Auto-Reply]: Absolutely! Our standard packages start for free and include 500 DMs per month. For premium features, you can upgrade via the workflows builder dashboard.`,
-          direction: 'outbound',
-          isAiGenerated: true,
-          sentAt: 'Just now'
-        };
+    // Send typing true to socket
+    emitTyping(selectedConv.id, true);
 
-        setConversations(prev => prev.map(c => {
-          if (c.id === selectedConv.id) {
-            return {
-              ...c,
-              lastMessage: aiMessage.content,
-              lastMessageTime: 'Just now',
-              messages: [...c.messages, aiMessage]
-            };
-          }
-          return c;
-        }));
-      }, 1500);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
     }
+
+    // Set timeout to clear typing state after 2.5s of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      emitTyping(selectedConv.id, false);
+    }, 2500);
   };
 
-  const toggleAiState = (id: string) => {
-    setConversations(prev => prev.map(c => {
-      if (c.id === id) {
-        return { ...c, aiActive: !c.aiActive };
-      }
-      return c;
-    }));
-  };
+  const handleSendMessage = async (e?: FormEvent) => {
+    e?.preventDefault();
+    if (!inputText.trim() && attachments.length === 0) return;
+    if (!selectedConv) return;
 
-  const updateNotes = (id: string, notes: string) => {
-    setConversations(prev => prev.map(c => {
-      if (c.id === id) {
-        return { ...c, notes };
-      }
-      return c;
-    }));
-  };
+    const text = inputText.trim() || `Sent ${attachments.length} attachment(s)`;
+    setInputText('');
+    setAttachments([]);
 
-  const updateLeadScore = (id: string, score: number) => {
-    const safeScore = Math.max(0, Math.min(100, score));
-    setConversations(prev => prev.map(c => {
-      if (c.id === id) {
-        return { ...c, leadScore: safeScore };
-      }
-      return c;
-    }));
-  };
+    // Clear typing timeout and emit false
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    emitTyping(selectedConv.id, false);
 
-  const handleAddTag = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTagInput.trim()) return;
-    setConversations(prev => prev.map(c => {
-      if (c.id === selectedConv.id) {
-        if (c.tags.includes(newTagInput.trim())) return c;
-        return { ...c, tags: [...c.tags, newTagInput.trim()] };
-      }
-      return c;
-    }));
-    setNewTagInput('');
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setConversations(prev => prev.map(c => {
-      if (c.id === selectedConv.id) {
-        return { ...c, tags: c.tags.filter(t => t !== tagToRemove) };
-      }
-      return c;
-    }));
+    try {
+      await sendMessage(selectedConv.id, text);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleSelectConversation = (id: string) => {
@@ -224,206 +161,400 @@ export default function InboxPage() {
     setMobileView('chat');
   };
 
-  const filteredConversations = conversations.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.username.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConversations = conversations.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.username.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  const patchSelected = (patch: Partial<InboxConversation>) => {
+    if (!selectedConv) return;
+    updateLocalConv(selectedConv.id, patch);
+  };
+
+  // Persist CRM fields helper
+  const persistCRMDetails = async (fieldPatch: { notes?: string; tags?: string[]; leadScore?: number }) => {
+    if (!selectedConv || !selectedConv.contactId) return;
+    setCrmSaving(true);
+    try {
+      await updateContactCRM(selectedConv.contactId, fieldPatch);
+    } catch (err) {
+      console.error('Error persisting contact CRM details:', err);
+    } finally {
+      setTimeout(() => setCrmSaving(false), 800);
+    }
+  };
+
+  // Notes changes with local updates + debounced saving
+  const handleNotesChange = (val: string) => {
+    patchSelected({ notes: val });
+
+    if (notesTimeoutRef.current) {
+      clearTimeout(notesTimeoutRef.current);
+    }
+
+    notesTimeoutRef.current = setTimeout(() => {
+      persistCRMDetails({ notes: val });
+    }, 1500);
+  };
+
+  // Save notes immediately when focus leaves the textarea
+  const handleNotesBlur = () => {
+    if (notesTimeoutRef.current) {
+      clearTimeout(notesTimeoutRef.current);
+    }
+    if (selectedConv) {
+      persistCRMDetails({ notes: selectedConv.notes });
+    }
+  };
+
+  // Instant save tags
+  const handleAddTag = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newTagInput.trim() || !selectedConv) return;
+    const newTag = newTagInput.trim();
+    if (selectedConv.tags.includes(newTag)) return;
+
+    const updatedTags = [...selectedConv.tags, newTag];
+    patchSelected({ tags: updatedTags });
+    setNewTagInput('');
+
+    await persistCRMDetails({ tags: updatedTags });
+  };
+
+  const handleRemoveTag = async (tagToRemove: string) => {
+    if (!selectedConv) return;
+    const updatedTags = selectedConv.tags.filter((t) => t !== tagToRemove);
+    patchSelected({ tags: updatedTags });
+
+    await persistCRMDetails({ tags: updatedTags });
+  };
+
+  // Lead Score change
+  const handleLeadScoreChange = async (score: number) => {
+    if (!selectedConv) return;
+    const val = Math.max(0, Math.min(100, score));
+    patchSelected({ leadScore: val });
+    await persistCRMDetails({ leadScore: val });
+  };
+
+  // Generate AI summary
+  const handleGenerateSummary = async () => {
+    if (!selectedConv) return;
+    setLoadingSummary(true);
+    try {
+      const summary = await fetchConversationSummary(selectedConv.id);
+      setAiSummary(summary);
+    } catch (err) {
+      console.error('Failed to generate summary:', err);
+      setAiSummary('Failed to compile summary. Ensure OpenAI keys are valid.');
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
+
+  if (loading && conversations.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center premium-dot-grid">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+          <span className="text-xs text-[#A0A0A0] font-light">Loading inbox workspace...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!loading && conversations.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#0A0A0F] text-white font-sans premium-dot-grid premium-radial-glow items-center justify-center p-6">
+        <div className="max-w-lg w-full">
+          <EmptyState
+            icon={<Instagram className="text-pink-400" size={32} />}
+            title="No conversations yet"
+            description="Connect Instagram to receive DMs, or start with a comment-to-DM workflow template."
+            primaryAction={{ label: 'Connect Instagram', href: '/settings' }}
+            secondaryAction={{ label: 'Comment → DM template', href: '/workflows?template=comment-dm' }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0A0A0F] text-white overflow-hidden font-sans">
-      {/* Header info */}
-      <div className="bg-[#0F0F0F] border-b border-[rgba(255,255,255,0.08)] px-6 py-4 flex justify-between items-center shrink-0">
+      {/* Header Panel */}
+      <div className="bg-[#0F0F0F]/90 backdrop-blur-md border-b border-[rgba(255,255,255,0.08)] px-6 py-4 flex justify-between items-center shrink-0">
         <div>
-          <h1 className="text-base font-bold text-white flex items-center gap-2 font-sans">
-            <MessageCircle className="text-white" size={18} />
-            Live Automation Inbox
+          <h1 className="text-sm font-bold text-white flex items-center gap-2 tracking-tight">
+            <MessageCircle size={16} className="text-orange-500" />
+            Live Inbox & Team Workspace
           </h1>
-          <p className="text-[11px] text-[#A0A0A0] mt-1 font-light">All your Instagram DMs in one place — live and synchronized.</p>
+          <p className="text-[10px] text-[#A0A0A0] mt-0.5 font-light">
+            Realtime updates active — Synced with backend API & WebSockets
+          </p>
         </div>
         <div className="flex items-center gap-3">
+          {crmSaving && (
+            <span className="text-[10px] text-gray-400 flex items-center gap-1.5 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full animate-pulse">
+              <Loader2 size={10} className="animate-spin" /> Autosaving...
+            </span>
+          )}
           <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1.5">
             <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-            <span className="text-emerald-400 text-xs font-medium">Live</span>
+            <span className="text-emerald-400 text-[10px] font-semibold tracking-wider uppercase">Live Socket</span>
           </div>
         </div>
       </div>
 
-      {/* Main Workspace */}
       <div className="flex-1 flex overflow-hidden">
-        
-        {/* Pane 1: Conversations List */}
-        <div className={`
-          ${mobileView === 'list' ? 'flex' : 'hidden'}
-          md:flex w-full md:w-72 flex-shrink-0
-          border-r border-gray-800 flex-col h-full bg-[#0F0F0F] overflow-hidden
-        `}>
-          <div className="p-4 border-b border-[rgba(255,255,255,0.06)] shrink-0">
+        {/* Sidebar Conversations List */}
+        <div
+          className={`${mobileView === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-80 flex-shrink-0 border-r border-gray-800/80 flex-col h-full bg-[#0F0F0F]`}
+        >
+          {/* Search bar */}
+          <div className="p-4 border-b border-[rgba(255,255,255,0.06)]">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 text-[#606060]" size={14} />
+              <Search className="absolute left-3 top-2.5 text-[#606060]" size={13} />
               <input
-                type="text"
-                placeholder="Search conversations..."
+                type="search"
+                placeholder="Filter chats by name..."
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-[#606060] focus:outline-none focus:border-white transition-colors"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Filter conversations by name"
+                className="w-full bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-[#606060] focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-all"
               />
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-[rgba(255,255,255,0.04)]">
-            {filteredConversations.map(conv => {
-              const isSelected = conv.id === selectedConv.id;
+          {/* Conversation list — virtualized when many rows */}
+          <div className="flex-1 min-h-0">
+            {filteredConversations.length > 20 ? (
+              <VirtualList
+                items={filteredConversations}
+                height="100%"
+                itemHeight={88}
+                className="divide-y divide-[rgba(255,255,255,0.03)]"
+                getKey={(c) => c.id}
+                renderItem={(conv) => {
+                  const isSelected = selectedConv && conv.id === selectedConv.id;
+                  const hasAiActive = conv.aiActive;
+                  const isUserTyping = typingConvs[conv.id];
+                  return (
+                    <div
+                      onClick={() => handleSelectConversation(conv.id)}
+                      className={`h-full px-4 py-3 cursor-pointer flex items-start gap-3 relative group transition-colors ${
+                        isSelected
+                          ? 'bg-[#141414] border-l-2 border-orange-500'
+                          : 'hover:bg-[#141414]/30'
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center text-xs font-bold uppercase shrink-0">
+                        {conv.name.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-semibold truncate text-[#E0E0E0]">{conv.name}</h4>
+                        <p className="text-[9px] text-[#A0A0A0] truncate">@{conv.username}</p>
+                        <p className="text-[10px] text-[#707070] truncate mt-0.5">
+                          {isUserTyping ? 'Typing…' : conv.lastMessage || 'No messages'}
+                        </p>
+                      </div>
+                      {hasAiActive && (
+                        <Sparkles size={12} className="text-purple-400 shrink-0" aria-hidden />
+                      )}
+                    </div>
+                  );
+                }}
+              />
+            ) : (
+          <div className="h-full overflow-y-auto divide-y divide-[rgba(255,255,255,0.03)]">
+            {filteredConversations.map((conv) => {
+              const isSelected = selectedConv && conv.id === selectedConv.id;
+              const hasAiActive = conv.aiActive;
+              const isUserTyping = typingConvs[conv.id];
+
               return (
                 <div
                   key={conv.id}
                   onClick={() => handleSelectConversation(conv.id)}
-                  className={`p-4 cursor-pointer flex items-start gap-3 transition-colors ${
-                    isSelected ? 'bg-[#141414] border-l-2 border-white' : 'hover:bg-[#141414]/40'
+                  className={`p-4 cursor-pointer flex items-start gap-3 relative group transition-colors ${
+                    isSelected
+                      ? 'bg-[#141414] border-l-2 border-orange-500'
+                      : 'hover:bg-[#141414]/30'
                   }`}
                 >
-                  <div className="relative shrink-0 mt-0.5 select-none">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center font-bold text-white text-xs uppercase shadow-inner">
-                      {conv.name.charAt(0)}
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 bg-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-[rgba(255,255,255,0.12)]">
-                      <Instagram size={8} className="text-white" />
-                    </div>
+                  {/* Quick Actions (Hover Over Row) */}
+                  <div className="absolute right-3 top-3 hidden group-hover:flex items-center gap-1.5 bg-[#0F0F0F]/90 backdrop-blur border border-[rgba(255,255,255,0.08)] shadow-xl rounded-lg p-1 transition-all duration-150 z-20">
+                    <button
+                      type="button"
+                      title={conv.status === 'open' ? 'Resolve/Close Conversation' : 'Re-open Conversation'}
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const nextStatus = conv.status === 'open' ? 'closed' : 'open';
+                        updateLocalConv(conv.id, { status: nextStatus });
+                        try {
+                          await api.patch(`/messages/conversations/${conv.id}/status`, { status: nextStatus });
+                        } catch (err) {
+                          console.error('Failed to change conversation status:', err);
+                        }
+                      }}
+                      className={`p-1.5 rounded hover:bg-[#1C1C24] transition-colors ${
+                        conv.status === 'open' ? 'text-[#606060] hover:text-emerald-400' : 'text-emerald-400'
+                      }`}
+                    >
+                      <Check size={11} />
+                    </button>
+                    <button
+                      type="button"
+                      title={hasAiActive ? 'Deactivate AI Assist' : 'Activate AI Assist'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateLocalConv(conv.id, { aiActive: !conv.aiActive });
+                      }}
+                      className={`p-1.5 rounded hover:bg-[#1C1C24] transition-colors ${
+                        hasAiActive ? 'text-purple-400 animate-pulse' : 'text-[#606060] hover:text-purple-400'
+                      }`}
+                    >
+                      <Sparkles size={11} />
+                    </button>
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-0.5">
-                      <h4 className="text-xs font-semibold text-white truncate">{conv.name}</h4>
-                      <span className="text-[9px] text-[#606060] whitespace-nowrap">{conv.lastMessageTime}</span>
+                  {/* Avatar */}
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center text-xs font-bold uppercase shadow-md select-none">
+                      {conv.name.charAt(0)}
                     </div>
-                    <p className="text-[10px] text-[#606060] truncate mb-1">@{conv.username}</p>
-                    <p className="text-[11px] text-[#A0A0A0] truncate font-light leading-snug">{conv.lastMessage}</p>
+                    {hasAiActive && (
+                      <div className="absolute -bottom-1 -right-1 bg-purple-600 border border-black rounded-full p-0.5 shadow-md">
+                        <Sparkles size={8} className="text-white" />
+                      </div>
+                    )}
+                  </div>
 
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex gap-1">
-                        {conv.tags.slice(0, 1).map(tag => (
-                          <span key={tag} className="text-[9px] bg-[#141414] border border-[rgba(255,255,255,0.08)] text-[#A0A0A0] px-2 py-0.5 rounded-full">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        {conv.aiActive && (
-                          <span className="text-[9px] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] text-white px-1.5 py-0.5 rounded flex items-center gap-0.5 font-bold">
-                            <Sparkles size={8} /> AI Active
-                          </span>
-                        )}
-                        {conv.unreadCount > 0 && (
-                          <span className="w-1.5 h-1.5 bg-white rounded-full" />
-                        )}
-                      </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0 pr-6">
+                    <div className="flex justify-between items-baseline mb-0.5">
+                      <h4 className="text-xs font-semibold truncate text-[#E0E0E0]">{conv.name}</h4>
+                      {conv.lastMessageTime && (
+                        <span className="text-[9px] text-[#505050] whitespace-nowrap shrink-0">{conv.lastMessageTime}</span>
+                      )}
                     </div>
+                    <p className="text-[9px] text-[#A0A0A0] font-light truncate mb-1">@{conv.username}</p>
+                    
+                    {/* Dynamic Message Preview / Typing Pulse */}
+                    {isUserTyping ? (
+                      <p className="text-[10px] text-emerald-400 italic font-semibold flex items-center gap-1">
+                        typing <span className="typing-dot bg-emerald-400" /><span className="typing-dot bg-emerald-400" /><span className="typing-dot bg-emerald-400" />
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-[#606060] truncate font-light">
+                        {conv.lastMessage}
+                      </p>
+                    )}
                   </div>
                 </div>
               );
             })}
-
             {filteredConversations.length === 0 && (
               <div className="p-8 text-center text-[#606060] text-xs font-light">
-                No chats found.
+                No chats found for filter.
               </div>
+            )}
+          </div>
             )}
           </div>
         </div>
 
-        {/* Pane 2: Conversation View */}
-        <div className={`
-          ${mobileView === 'chat' ? 'flex' : 'hidden'}
-          md:flex flex-1 flex-col min-w-0 bg-[#0A0A0F]
-        `}>
-          
-          {/* Chat Pane Header */}
-          <div className="bg-[#0F0F0F]/80 border-b border-[rgba(255,255,255,0.08)] px-6 py-3.5 flex justify-between items-center shrink-0">
-            <div className="flex items-center gap-3 min-w-0">
+        {/* Selected Chat Room */}
+        <div
+          className={`${mobileView === 'chat' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-w-0 bg-[#0A0A0F]`}
+        >
+          {/* Active Chat Header */}
+          <div className="bg-[#0F0F0F]/80 backdrop-blur-sm border-b border-[rgba(255,255,255,0.08)] px-6 py-3.5 flex justify-between items-center">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="md:hidden text-gray-400 mr-2 hover:text-white"
+                className="md:hidden text-gray-400 hover:text-white p-1 rounded-lg"
                 onClick={() => setMobileView('list')}
+                aria-label="Back to conversation list"
               >
-                <ArrowLeft size={20} />
+                <ArrowLeft size={18} />
               </button>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center font-bold text-white text-xs shrink-0 select-none uppercase">
-                {selectedConv.name.charAt(0)}
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-xs font-semibold text-white truncate leading-none mb-0.5">{selectedConv.name}</h3>
-                <p className="text-[10px] text-[#A0A0A0] truncate">@{selectedConv.username}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 border border-[rgba(255,255,255,0.08)] bg-[#0F0F0F] px-3 py-1.5 rounded-xl">
-                <Sparkles size={12} className={selectedConv.aiActive ? 'text-white' : 'text-[#606060]'} />
-                <span className="text-[11px] font-semibold text-[#A0A0A0] select-none">AI Auto-Reply</span>
-                <button
-                  type="button"
-                  onClick={() => toggleAiState(selectedConv.id)}
-                  className={`w-7 h-3.5 rounded-full p-0.5 transition-colors duration-150 focus:outline-none ${
-                    selectedConv.aiActive ? 'bg-white' : 'bg-[#141414] border border-[rgba(255,255,255,0.12)]'
-                  }`}
-                >
-                  <div className={`w-2.5 h-2.5 rounded-full shadow-md transform transition-transform duration-150 ${
-                    selectedConv.aiActive ? 'translate-x-3.5 bg-black' : 'translate-x-0 bg-[#606060]'
-                  }`} />
-                </button>
+              <div>
+                <h3 className="text-xs font-semibold flex items-center gap-1.5">
+                  {selectedConv.name}
+                  {selectedConv.status === 'closed' && (
+                    <span className="text-[8px] font-bold bg-white/10 text-gray-400 border border-white/20 rounded-full px-2 py-0.5 uppercase tracking-widest">
+                      Resolved
+                    </span>
+                  )}
+                </h3>
+                <p className="text-[9px] text-[#A0A0A0] font-light">@{selectedConv.username}</p>
               </div>
             </div>
+            <button
+              type="button"
+              onClick={() => patchSelected({ aiActive: !selectedConv.aiActive })}
+              className={`text-[10px] flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all duration-300 ${
+                selectedConv.aiActive
+                  ? 'bg-purple-950/40 border-purple-500/30 text-purple-300 hover:border-purple-500/60 shadow-[0_0_12px_rgba(139,92,246,0.1)]'
+                  : 'bg-black/40 border-[rgba(255,255,255,0.08)] text-[#A0A0A0] hover:text-white'
+              }`}
+            >
+              <Sparkles size={11} className={selectedConv.aiActive ? 'animate-spin-slow text-purple-400' : ''} />
+              AI Assistant {selectedConv.aiActive ? 'Active' : 'Off'}
+            </button>
           </div>
 
-          {/* Chat Messages stream */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#0A0A0F]">
-            <div className="text-center py-2 shrink-0">
-              <span className="text-[9px] bg-[#0F0F0F] border border-[rgba(255,255,255,0.06)] text-[#606060] px-3 py-1 rounded-full font-medium uppercase tracking-wide">
-                Conversation Started
-              </span>
-            </div>
-
-            {selectedConv.messages.map(msg => {
-              const isInbound = msg.direction === 'inbound';
-              return (
+          {/* Messages History Panel */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {selectedConv.messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.direction === 'inbound' ? 'justify-start' : 'justify-end'} animate-message-appear`}
+              >
                 <div
-                  key={msg.id}
-                  className={`flex ${isInbound ? 'justify-start' : 'justify-end'}`}
+                  className={`max-w-[70%] rounded-[20px] px-4 py-3 text-xs leading-relaxed ${
+                    msg.direction === 'inbound'
+                      ? 'bg-gradient-to-br from-gray-100 to-gray-200 text-[#1A1A1A] rounded-tl-sm shadow-md font-medium'
+                      : 'bg-black border border-[rgba(255,255,255,0.08)] text-[#FAFAFA] rounded-tr-sm shadow-xl'
+                  }`}
                 >
-                  <div className={`max-w-[70%] flex flex-col ${isInbound ? 'items-start' : 'items-end'}`}>
-                    
-                    <div className="flex items-center gap-1.5 mb-1 select-none">
-                      <span className="text-[9px] text-[#606060] font-light">{msg.sentAt}</span>
-                      {msg.isAiGenerated && (
-                        <span className="text-[8px] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] text-white px-1.5 py-0.2 rounded font-bold flex items-center gap-0.5 shrink-0">
-                          <Sparkles size={8} /> AI Response
-                        </span>
-                      )}
-                    </div>
-
-                    <div className={`rounded-[18px] px-3.5 py-2.5 text-xs leading-relaxed ${
-                      isInbound 
-                        ? 'bg-[#EEEEEE] text-[#1A1A1A] rounded-tl-[4px]' 
-                        : 'bg-black border border-[rgba(255,255,255,0.08)] text-white rounded-tr-[4px]'
-                    }`}>
-                      {msg.content}
-                    </div>
-
-                  </div>
-                </div>
-              );
-            })}
-
-            {isTypingSimulated && (
-              <div className="flex justify-start">
-                <div className="bg-black border border-[rgba(255,255,255,0.08)] rounded-[18px] rounded-tl-[4px] px-3.5 py-2.5 max-w-[70%]">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" />
-                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:0.2s]" />
-                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:0.4s]" />
-                    <span className="text-[10px] text-white font-bold ml-1.5 flex items-center gap-1">
-                      AI typing auto-response...
+                  {msg.content}
+                  {msg.isAiGenerated && (
+                    <span className="block text-[8px] tracking-wider uppercase mt-1.5 opacity-60 text-purple-500 font-bold flex items-center gap-1">
+                      <Sparkles size={8} /> AI Co-Pilot Reply
                     </span>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* Standard Typing Indicator inside Chat Log */}
+            {typingConvs[selectedConv.id] && (
+              <div className="flex justify-start animate-message-appear">
+                <div className="bg-gradient-to-br from-gray-100 to-gray-200 text-[#1A1A1A] max-w-[70%] rounded-[20px] rounded-tl-sm px-4 py-3 text-xs flex items-center gap-1 font-medium shadow-md">
+                  <span className="text-[10px] font-semibold text-gray-600 mr-1">Customer typing</span>
+                  <span className="typing-dot bg-gray-600" />
+                  <span className="typing-dot bg-gray-600" />
+                  <span className="typing-dot bg-gray-600" />
+                </div>
+              </div>
+            )}
+
+            {/* AI Typing Indicator inside Chat Log */}
+            {aiTypingConvId === selectedConv.id && (
+              <div className="flex justify-start animate-message-appear">
+                <div className="bg-gradient-to-r from-purple-950/30 to-pink-950/30 border border-purple-500/20 text-white max-w-[70%] rounded-[20px] rounded-tl-sm px-4 py-3.5 text-xs flex flex-col gap-1.5 animate-ai-glow">
+                  <div className="flex items-center gap-1.5 font-bold text-purple-300">
+                    <Sparkles size={11} className="text-purple-400 animate-pulse" />
+                    <span>AI Assistant is drafting a reply</span>
+                    <span className="typing-dot bg-purple-400" />
+                    <span className="typing-dot bg-purple-400" />
+                    <span className="typing-dot bg-purple-400" />
                   </div>
+                  <p className="text-[9px] text-[#A0A0A0] leading-normal font-light">
+                    AutoFlow LLM is crafting reply suggestions in background...
+                  </p>
                 </div>
               </div>
             )}
@@ -431,145 +562,238 @@ export default function InboxPage() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Chat Input Panel */}
-          <form onSubmit={handleSendMessage} className="p-4 border-t border-[rgba(255,255,255,0.08)] bg-[#0F0F0F]/60 shrink-0">
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                value={inputText}
-                onChange={e => setInputText(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 bg-[#141414] border border-[rgba(255,255,255,0.08)] focus:border-white rounded-xl px-4 py-3 text-xs focus:outline-none transition-colors text-white placeholder-[#606060]"
-              />
-              <button
-                type="submit"
-                className="bg-white hover:opacity-88 active:scale-95 text-black p-3.5 rounded-xl transition-all duration-150 flex items-center justify-center shrink-0 shadow-sm"
-              >
-                <Send size={14} />
-              </button>
+          {/* Horizontal Layout of Smart Suggestion Chips */}
+          {smartReplies && smartReplies.length > 0 && (
+            <div className="px-4 py-2 border-t border-[rgba(255,255,255,0.04)] bg-black/30 flex gap-2 overflow-x-auto items-center select-none no-scrollbar">
+              <span className="text-[9px] text-purple-400 font-bold uppercase tracking-wider flex items-center gap-1 shrink-0">
+                <Sparkles size={10} className="text-purple-400" /> Smart Suggestions:
+              </span>
+              {smartReplies.map((reply, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleInputChange(reply)}
+                  className="text-[10px] bg-[#141414] hover:bg-[#1E1E2A] text-[#C0C0C0] hover:text-white border border-[rgba(255,255,255,0.08)] hover:border-purple-500/40 px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all duration-200 shadow-md transform active:scale-95"
+                >
+                  {reply}
+                </button>
+              ))}
             </div>
-          </form>
+          )}
 
+          {/* Attachment Preview thumbnail cards above composer */}
+          {attachments.length > 0 && (
+            <div className="px-4 py-2.5 bg-black/40 border-t border-[rgba(255,255,255,0.06)] flex flex-wrap gap-2 shrink-0 animate-message-appear">
+              {attachments.map((file, idx) => (
+                <div
+                  key={idx}
+                  className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-2 flex items-center gap-2 text-xs relative group shadow-md"
+                >
+                  <div className="w-8 h-8 bg-black/50 rounded-lg flex items-center justify-center text-[8px] uppercase font-bold text-[#A0A0A0] tracking-wider select-none">
+                    {file.name.split('.').pop() || 'file'}
+                  </div>
+                  <div className="max-w-[120px]">
+                    <p className="font-semibold text-[10px] truncate text-white">{file.name}</p>
+                    <p className="text-[9px] text-[#606060]">{(file.size / 1024).toFixed(1)} KB</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAttachments(attachments.filter((_, i) => i !== idx))}
+                    className="text-gray-400 hover:text-white ml-1 p-1 hover:bg-white/5 rounded-full"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Chat Composer Input Form */}
+          <form
+            onSubmit={handleSendMessage}
+            className="p-4 border-t border-[rgba(255,255,255,0.08)] bg-[#0F0F0F]/65 flex gap-3 items-center shrink-0"
+          >
+            {/* Hidden Input File */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              multiple
+              onChange={(e) => {
+                if (!e.target.files) return;
+                const fileList = Array.from(e.target.files).map((f) => ({
+                  name: f.name,
+                  size: f.size,
+                  type: f.type,
+                }));
+                setAttachments([...attachments, ...fileList]);
+              }}
+              className="hidden"
+            />
+
+            {/* Paperclip selector */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="text-[#606060] hover:text-white p-3 hover:bg-white/5 rounded-xl transition-colors duration-150"
+              title="Attach document or image"
+            >
+              <Paperclip size={16} />
+            </button>
+
+            {/* Main composer input */}
+            <input
+              id="composer-input"
+              value={inputText}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder={attachments.length > 0 ? "Add message details..." : "Type custom DM response..."}
+              className="flex-1 bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-3 text-sm md:text-xs text-white placeholder-[#606060] focus:outline-none focus:border-orange-500/40 focus:ring-1 focus:ring-orange-500/20 transition-all font-light"
+            />
+
+            {/* Send CTA */}
+            <button
+              type="submit"
+              disabled={sending || (!inputText.trim() && attachments.length === 0)}
+              className="bg-white hover:bg-gray-100 text-black p-3.5 rounded-xl disabled:opacity-30 disabled:hover:bg-white hover:scale-105 active:scale-95 transition-all shadow-lg"
+            >
+              <Send size={13} />
+            </button>
+          </form>
         </div>
 
-        {/* Pane 3: Lead Details & CRM Card */}
-        <div className="hidden lg:flex w-72 lg:w-80 bg-[#0F0F0F] border-l border-[rgba(255,255,255,0.08)] flex-col overflow-y-auto shrink-0 p-5">
-          <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2 select-none">
-            <Sliders size={13} className="text-white" />
-            Lead Metadata CRM
+        {/* Lead Details CRM Sidebar */}
+        <div className="hidden lg:flex w-80 bg-[#0F0F0F] border-l border-[rgba(255,255,255,0.08)] flex-col p-5 overflow-y-auto shrink-0 select-none">
+          <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-[#606060] mb-5 flex items-center gap-2">
+            <Sliders size={12} className="text-orange-500" /> Premium Lead CRM
           </h3>
-
-          {/* Lead Card summary */}
-          <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-4 mb-5 text-center">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 mx-auto flex items-center justify-center font-bold text-white text-lg mb-2.5 select-none uppercase">
+          
+          {/* Compact visual Card */}
+          <div className="text-center bg-black/20 border border-[rgba(255,255,255,0.04)] rounded-[20px] p-5 mb-5 shadow-md">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-500 mx-auto flex items-center justify-center text-xl font-bold uppercase select-none shadow-lg">
               {selectedConv.name.charAt(0)}
             </div>
-            <h4 className="text-white font-semibold text-xs leading-none">{selectedConv.name}</h4>
-            <p className="text-[10px] text-[#606060] mt-1">@{selectedConv.username}</p>
-
-            <div className="mt-4 pt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between">
-              <span className="text-[9px] text-[#A0A0A0] font-semibold uppercase">Platform</span>
-              <span className="text-[10px] text-white font-bold flex items-center gap-1">
-                <Instagram size={11} /> Instagram DM
-              </span>
-            </div>
+            <p className="text-xs font-bold mt-3 text-white tracking-tight">{selectedConv.name}</p>
+            <p className="text-[10px] text-[#A0A0A0] font-light flex items-center justify-center gap-1 mt-1">
+              <Instagram size={10} className="text-[#C0C0C0]" /> @{selectedConv.username}
+            </p>
           </div>
 
-          {/* Interactive Lead Score */}
-          <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-4 mb-5">
-            <div className="flex justify-between items-center mb-2 select-none">
-              <span className="text-[11px] font-semibold text-[#A0A0A0] flex items-center gap-1">
-                <TrendingUp size={12} className="text-white" /> Lead Score
+          {/* AI Summarization Panel */}
+          <div className="border border-purple-500/15 bg-purple-950/10 rounded-[18px] p-4 mb-5 shadow-inner">
+            <div className="flex justify-between items-center mb-2.5">
+              <span className="text-[10px] font-bold text-purple-300 flex items-center gap-1.5 uppercase tracking-wider">
+                <Sparkles size={11} className="text-purple-400" />
+                AI Conversation Summary
               </span>
-              <span className="text-xs font-bold text-white">{selectedConv.leadScore}/100</span>
+              {aiSummary && (
+                <button
+                  onClick={handleGenerateSummary}
+                  className="text-[9px] text-gray-500 hover:text-white font-medium flex items-center gap-0.5 transition-colors"
+                >
+                  Regenerate
+                </button>
+              )}
+            </div>
+            {loadingSummary ? (
+              <div className="space-y-2 py-2 select-none">
+                <div className="h-2.5 bg-[rgba(255,255,255,0.04)] rounded animate-pulse w-full" />
+                <div className="h-2.5 bg-[rgba(255,255,255,0.04)] rounded animate-pulse w-5/6" />
+                <div className="h-2.5 bg-[rgba(255,255,255,0.04)] rounded animate-pulse w-2/3" />
+              </div>
+            ) : aiSummary ? (
+              <p className="text-[11px] text-[#D0D0D0] leading-relaxed italic font-light">
+                "{aiSummary}"
+              </p>
+            ) : (
+              <button
+                onClick={handleGenerateSummary}
+                className="w-full py-2 bg-purple-900/40 border border-purple-500/30 hover:border-purple-500/50 hover:bg-purple-900/60 rounded-lg text-[10px] font-medium text-purple-200 flex items-center justify-center gap-1.5 transition-all shadow-sm"
+              >
+                <Sparkles size={11} className="text-purple-300" />
+                Generate AI Summary
+              </button>
+            )}
+          </div>
+
+          {/* Lead Score Tactics Slider */}
+          <div className="mb-5 bg-black/20 border border-[rgba(255,255,255,0.04)] rounded-[18px] p-4 shadow-sm">
+            <div className="flex justify-between text-[11px] mb-2.5 select-none font-semibold">
+              <span className="text-[#A0A0A0] flex items-center gap-1.5">
+                <TrendingUp size={11} className="text-orange-500" /> Lead Score
+              </span>
+              <span className="text-white bg-white/5 border border-white/10 px-2 py-0.5 rounded text-[10px]">
+                {selectedConv.leadScore}/100
+              </span>
             </div>
             
-            {/* Progress bar */}
-            <div className="w-full bg-black h-1.5 rounded-full overflow-hidden mb-3">
-              <div 
-                className="bg-white h-full rounded-full transition-all duration-300"
-                style={{ width: `${selectedConv.leadScore}%` }}
+            {/* Range Slider for immediate scoring updates */}
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={selectedConv.leadScore}
+                onChange={(e) => handleLeadScoreChange(Number(e.target.value))}
+                className="flex-1 h-1 bg-[#141414] border border-[rgba(255,255,255,0.04)] rounded-full appearance-none cursor-pointer accent-orange-500 focus:outline-none"
               />
-            </div>
-
-            {/* Score controller */}
-            <div className="flex justify-between gap-2">
-              <button 
-                type="button"
-                onClick={() => updateLeadScore(selectedConv.id, selectedConv.leadScore - 5)}
-                className="flex-1 bg-black hover:bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] text-white text-[10px] py-1.5 rounded-lg font-semibold transition-colors duration-150"
-              >
-                -5 Score
-              </button>
-              <button 
-                type="button"
-                onClick={() => updateLeadScore(selectedConv.id, selectedConv.leadScore + 5)}
-                className="flex-1 bg-black hover:bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] text-white text-[10px] py-1.5 rounded-lg font-semibold transition-colors duration-150"
-              >
-                +5 Score
-              </button>
             </div>
           </div>
 
-          {/* Notes manager */}
-          <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-4 mb-5 flex flex-col">
-            <div className="text-[11px] font-semibold text-[#A0A0A0] mb-2 flex items-center gap-1.5 select-none">
-              <FileText size={12} className="text-white" /> Lead Notes
+          {/* Lead Notes Area (Debounced persistence) */}
+          <div className="mb-5 bg-black/20 border border-[rgba(255,255,255,0.04)] rounded-[18px] p-4 shadow-sm">
+            <div className="text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <FileText size={11} className="text-[#A0A0A0]" /> Notes (Autosaved)
             </div>
             <textarea
-              rows={3}
+              rows={4}
               value={selectedConv.notes}
-              onChange={e => updateNotes(selectedConv.id, e.target.value)}
-              placeholder="Add lead notes..."
-              className="bg-black border border-[rgba(255,255,255,0.08)] rounded-lg p-2.5 text-xs text-white placeholder-[#606060] focus:outline-none focus:border-white transition-colors resize-none leading-relaxed font-light"
+              onChange={(e) => handleNotesChange(e.target.value)}
+              onBlur={handleNotesBlur}
+              placeholder="Record lead interaction details here..."
+              className="w-full bg-black/40 border border-[rgba(255,255,255,0.08)] rounded-xl p-3 text-xs text-gray-200 placeholder-[#505050] focus:outline-none focus:border-orange-500/30 transition-all font-light leading-relaxed resize-none"
             />
           </div>
 
-          {/* Interactive Tags list */}
-          <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-4 flex flex-col">
-            <div className="text-[11px] font-semibold text-[#A0A0A0] mb-3 flex items-center gap-1.5 select-none">
-              <Star size={12} className="text-white" /> Custom Tags
+          {/* Tags Manager (Instant persist) */}
+          <div className="bg-black/20 border border-[rgba(255,255,255,0.04)] rounded-[18px] p-4 shadow-sm">
+            <div className="text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-3.5 flex items-center gap-1.5">
+              <Star size={11} className="text-orange-500" /> Tags Management
             </div>
-
-            {/* Tags wrapper */}
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {selectedConv.tags.map(tag => (
-                <span 
-                  key={tag} 
-                  className="text-[10px] bg-black border border-[rgba(255,255,255,0.08)] text-white px-2 py-0.5 rounded-full flex items-center gap-1 font-medium select-none"
-                >
-                  {tag}
-                  <button 
-                    type="button"
+            
+            {/* Tag Badges list */}
+            {selectedConv.tags && selectedConv.tags.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5 mb-3.5">
+                {selectedConv.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-[9px] bg-black border border-[rgba(255,255,255,0.06)] hover:border-red-500/30 hover:bg-red-950/10 px-2.5 py-1 rounded-full flex items-center gap-1.5 text-gray-300 transition-all cursor-pointer group/tag"
                     onClick={() => handleRemoveTag(tag)}
-                    className="text-[#606060] hover:text-red-400 transition-colors"
                   >
-                    <X size={10} />
-                  </button>
-                </span>
-              ))}
-            </div>
+                    {tag}
+                    <X size={8} className="text-gray-500 group-hover/tag:text-red-500 transition-colors" />
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[10px] text-[#505050] italic font-light mb-3">No tags applied yet.</p>
+            )}
 
-            {/* Tags form */}
+            {/* Tag Composer Form */}
             <form onSubmit={handleAddTag} className="flex gap-2">
               <input
-                type="text"
-                placeholder="Add tag..."
                 value={newTagInput}
-                onChange={e => setNewTagInput(e.target.value)}
-                className="flex-1 bg-black border border-[rgba(255,255,255,0.08)] focus:border-white rounded-lg px-2.5 py-1.5 text-xs focus:outline-none transition-colors text-white placeholder-[#606060]"
+                onChange={(e) => setNewTagInput(e.target.value)}
+                placeholder="New tag..."
+                className="flex-1 bg-black/40 border border-[rgba(255,255,255,0.08)] rounded-lg px-2.5 py-1.5 text-[11px] placeholder-[#505050] focus:outline-none"
               />
               <button
                 type="submit"
-                className="bg-black hover:bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] p-2 rounded-lg text-white transition-colors flex items-center justify-center"
+                className="p-1.5 bg-[#141414] hover:bg-[#1E1E24] border border-[rgba(255,255,255,0.08)] rounded-lg text-gray-400 hover:text-white transition-colors"
               >
-                <Plus size={11} />
+                <Plus size={12} />
               </button>
             </form>
           </div>
-
         </div>
-
       </div>
     </div>
   );

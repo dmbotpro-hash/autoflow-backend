@@ -59,31 +59,17 @@ const plans = [
   },
 ];
 
+import { MarketingSection, SectionHeader } from './MarketingSection';
+
 export default function PricingSection() {
   return (
-    <section id="pricing" className="bg-black py-24 px-6">
-      <div className="max-w-[1100px] mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16 select-none">
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 0.5, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-            className="section-label"
-          >
-            Pricing
-          </motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: 24, scale: 0.98 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-white text-3xl sm:text-[32px] font-semibold leading-[1.25] tracking-tight mt-3 font-sans"
-          >
-            Simple, Transparent Pricing
-          </motion.h2>
-        </div>
+    <MarketingSection id="pricing" variant="light">
+        <SectionHeader
+          light
+          label="Pricing"
+          title="Simple, transparent pricing"
+          subtitle="Start free. Scale when your DMs take off."
+        />
 
         {/* Plans */}
         <motion.div 
@@ -106,34 +92,34 @@ export default function PricingSection() {
                 hidden: { opacity: 0, y: 16 },
                 show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }
               }}
-              className={`relative rounded-2xl p-8 bg-[#0F0F0F] border hover:bg-[#141414] transition-all duration-200 flex flex-col justify-between ${
+              className={`relative rounded-2xl p-8 bg-white border transition-all duration-200 flex flex-col justify-between ${
                 plan.highlight
-                  ? 'border-[rgba(255,255,255,0.25)] shadow-[0_10px_30px_rgba(255,255,255,0.02)]'
-                  : 'border-[rgba(255,255,255,0.08)]'
+                  ? 'border-violet-300 shadow-xl shadow-violet-100 ring-2 ring-violet-500/20'
+                  : 'border-slate-200 hover:border-slate-300'
               }`}
             >
               {plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-black text-[9px] tracking-wider uppercase font-extrabold px-3 py-1 rounded-full border border-white">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-[9px] tracking-wider uppercase font-extrabold px-3 py-1 rounded-full">
                   MOST POPULAR
                 </div>
               )}
 
               <div>
                 <div className="mb-6">
-                  <div className="text-[#A0A0A0] text-sm mb-1">{plan.name}</div>
+                  <div className="text-slate-500 text-sm mb-1">{plan.name}</div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-white">{plan.price}</span>
-                    <span className="text-[#606060] text-xs font-medium">{plan.period}</span>
+                    <span className="text-4xl font-bold text-slate-900">{plan.price}</span>
+                    <span className="text-slate-400 text-xs font-medium">{plan.period}</span>
                   </div>
-                  <div className="text-[#606060] text-xs mt-1.5 font-light">{plan.desc}</div>
+                  <div className="text-slate-500 text-xs mt-1.5">{plan.desc}</div>
                 </div>
 
                 <ul className="space-y-3.5 mb-8">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-xs text-[#A0A0A0]">
+                    <li key={f} className="flex items-center gap-2.5 text-xs text-slate-600">
                       <Check
                         size={14}
-                        className={plan.highlight ? 'text-white' : 'text-[#606060]'}
+                        className={plan.highlight ? 'text-violet-600' : 'text-slate-400'}
                       />
                       <span>{f}</span>
                     </li>
@@ -145,8 +131,8 @@ export default function PricingSection() {
                 href={plan.ctaLink}
                 className={`block w-full text-center py-3 rounded-full text-xs font-semibold tracking-wide transition-all ${
                   plan.highlight
-                    ? 'bg-white text-black hover:opacity-88'
-                    : 'bg-transparent text-white border border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.06)]'
+                    ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:opacity-90'
+                    : 'bg-slate-100 text-slate-800 border border-slate-200 hover:bg-slate-200'
                 }`}
               >
                 {plan.cta}
@@ -156,10 +142,9 @@ export default function PricingSection() {
         </motion.div>
 
         {/* Guarantee */}
-        <div className="text-center mt-10 text-[#606060] text-xs leading-relaxed font-light">
-          ✓ No credit card required &nbsp;•&nbsp; ✓ Cancel anytime &nbsp;•&nbsp; ✓ Secure local payment networks
+        <div className="text-center mt-10 text-slate-500 text-xs leading-relaxed">
+          ✓ No credit card required &nbsp;•&nbsp; ✓ Cancel anytime &nbsp;•&nbsp; ✓ Secure payments
         </div>
-      </div>
-    </section>
+    </MarketingSection>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '../api/auth.api';
 import { useAuthStore } from '../store/auth.store';
+import { setAuthCookie } from '../utils/auth-cookie';
 
 export function useAuth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,27 +14,40 @@ export function useAuth() {
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const setWorkspaceId = useAuthStore((state) => state.setWorkspaceId);
 
+  const applySession = async (
+    data: { user: { id: string; email: string; name: string }; accessToken: string; refreshToken: string },
+  ) => {
+    setAuth(data.user, data.accessToken, data.refreshToken);
+    setAuthCookie(data.accessToken);
+
+    try {
+      const meRes = await api.get('/users/me');
+      const workspaceId =
+        meRes.data.workspaces?.[0]?.workspace?.id ??
+        meRes.data.workspaces?.[0]?.workspaceId;
+      if (workspaceId) setWorkspaceId(workspaceId);
+    } catch {
+      /* workspace optional on first load */
+    }
+  };
+
+  const resolvePostAuthRoute = async () => {
+    try {
+      const res = await api.get('/settings');
+      if (!res.data?.onboardingComplete) return '/onboarding';
+    } catch {
+      return '/onboarding';
+    }
+    return '/dashboard';
+  };
+
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     setError(null);
     try {
       const { data } = await api.post('/auth/login', { email, password });
-      setAuth(data.user, data.accessToken, data.refreshToken);
-      
-      // Workspace ID fetch and save
-      const meRes = await api.get('/users/me', {
-        headers: { Authorization: `Bearer ${data.accessToken}` }
-      });
-      const workspaceId = meRes.data.workspaces?.[0]?.workspace?.id || meRes.data.workspaces?.[0]?.workspaceId;
-      if (workspaceId) {
-        localStorage.setItem('workspaceId', workspaceId);
-        setWorkspaceId(workspaceId);
-      }
-      
-      localStorage.setItem('token', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
-
-      router.push('/dashboard');
+      await applySession(data);
+      router.push(await resolvePostAuthRoute());
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {
@@ -41,7 +55,15 @@ export function useAuth() {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    try {
+      if (refreshToken) {
+        await api.post('/auth/logout', { refreshToken });
+      }
+    } catch {
+      /* proceed with local clear */
+    }
     clearAuth();
     router.push('/login');
   };
@@ -51,18 +73,8 @@ export function useAuth() {
     setError(null);
     try {
       const { data } = await api.post('/auth/register', { name, email, password });
-      setAuth(data.user, data.accessToken, data.refreshToken);
-      
-      const workspaceId = data.user.workspaces?.[0]?.workspace?.id || data.user.workspaces?.[0]?.workspaceId;
-      if (workspaceId) {
-        localStorage.setItem('workspaceId', workspaceId);
-        setWorkspaceId(workspaceId);
-      }
-      
-      localStorage.setItem('token', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
-
-      router.push('/dashboard');
+      await applySession(data);
+      router.push('/onboarding');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
@@ -81,4 +93,3 @@ export function useAuth() {
     error,
   };
 }
-

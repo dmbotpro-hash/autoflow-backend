@@ -20,33 +20,80 @@ model User {
 
   workspaces    WorkspaceMember[]
   refreshTokens RefreshToken[]
+  loginEvents   LoginEvent[]
 }
 
 model RefreshToken {
+  id          String   @id @default(uuid())
+  token       String   @unique
+  userId      String
+  expiresAt   DateTime
+  userAgent   String?
+  deviceLabel String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model LoginEvent {
   id        String   @id @default(uuid())
-  token     String   @unique
   userId    String
-  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  device    String?
+  success   Boolean  @default(true)
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id])
 }
 
-model Workspace {
-  id        String   @id @default(uuid())
+model Organization {
+  id        String      @id @default(uuid())
   name      String
-  slug      String   @unique
+  slug      String      @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  workspaces Workspace[]
+}
+
+model WorkspaceInvite {
+  id          String   @id @default(uuid())
+  workspaceId String
+  email       String
+  role        String   @default("member")
+  token       String   @unique @default(uuid())
+  status      String   @default("pending")
+  invitedById String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([workspaceId, email])
+}
+
+model Workspace {
+  id             String   @id @default(uuid())
+  organizationId String?
+  name           String
+  slug           String   @unique
   plan                   Plan               @default(FREE)
   subscriptionStatus     SubscriptionStatus @default(TRIAL)
   stripeCustomerId       String?
   stripeSubscriptionId   String?
   subscriptionExpiresAt  DateTime?
   monthlyMessageCount    Int                @default(0)
+  aiTone                 String             @default("Friendly")
+  aiPrompt               String             @default("You are a helpful customer support assistant for a digital marketing business. Keep your replies concise and focus on guiding users toward our products.")
+  onboardingCompletedAt  DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
 
+  organization     Organization?     @relation(fields: [organizationId], references: [id])
   members          WorkspaceMember[]
+  invites          WorkspaceInvite[]
   socialAccounts   SocialAccount[]
   contacts         Contact[]
   workflows        Workflow[]
@@ -59,7 +106,7 @@ model WorkspaceMember {
   id          String    @id @default(uuid())
   userId      String
   workspaceId String
-  role        String    @default("member")
+  role        String    @default("owner")
   createdAt   DateTime  @default(now())
 
   user      User      @relation(fields: [userId], references: [id])

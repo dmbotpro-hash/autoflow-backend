@@ -1,22 +1,11 @@
-/**
- * FILE: create-workspace.dto.ts
- * PURPOSE: Data transfer object for creating a new workspace
- * 
- * PROPS / INPUTS:
- * - name
- * 
- * DEPENDENCIES:
- * - class-validator decorators
- * 
- * EXPORTS:
- * - CreateWorkspaceDto class
- * 
- * NEXT SESSION INSTRUCTION:
- * - Define validation rules for workspace creation.
- */
+import { IsOptional, IsString, MinLength } from 'class-validator';
 
-// Imports will go here
 export class CreateWorkspaceDto {
-  // Implementation pending
-}
+  @IsString()
+  @MinLength(2)
+  name: string;
 
+  @IsOptional()
+  @IsString()
+  organizationId?: string;
+}

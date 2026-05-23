@@ -1,175 +1,241 @@
 'use client';
 
-import { useState } from 'react';
-import { CreditCard, Check, ShieldAlert, BarChart3 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { CreditCard, Check, ShieldAlert, BarChart3, Loader2 } from 'lucide-react';
+import api from '@/lib/api/auth.api';
+import { useWorkspaceStore } from '@/lib/store/workspace.store';
 
-export default function BillingPage() {
-  const [currentPlan, setCurrentPlan] = useState('Free');
-  const dmsUsed = 240;
-  const dmsLimit = 500;
-  const usagePercentage = (dmsUsed / dmsLimit) * 100;
+interface UsageData {
+  plan: string;
+  subscriptionStatus: string;
+  monthlyMessageCount: number;
+  monthlyLimit: number;
+  usagePercentage: number;
+}
+
+function BillingContent() {
+  const searchParams = useSearchParams();
+  const workspaces = useWorkspaceStore((s) => s.workspaces);
+  const workspaceId =
+    typeof window !== 'undefined' ? localStorage.getItem('workspaceId') : null;
+  const role = workspaces.find((w) => w.id === workspaceId)?.role;
+  const canUpgrade = role === 'owner' || role === 'admin';
+
+  const [usage, setUsage] = useState<UsageData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [upgrading, setUpgrading] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const loadUsage = () => {
+    api
+      .get('/billing/usage')
+      .then((res) => setUsage(res.data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadUsage();
+    const upgraded = searchParams.get('upgraded');
+    const session = searchParams.get('session');
+    if (upgraded && session && canUpgrade) {
+      api
+        .post('/billing/upgrade', { plan: upgraded, sessionId: session })
+        .then(() => {
+          setToast(`Upgraded to ${upgraded}!`);
+          loadUsage();
+        })
+        .catch(() => setToast('Upgrade failed'));
+    }
+  }, [searchParams, canUpgrade]);
+
+  const currentPlan = usage?.plan ?? 'FREE';
+
+  const handleUpgrade = async (planKey: string) => {
+    if (!canUpgrade) return;
+    setUpgrading(planKey);
+    try {
+      const checkout = await api.post('/billing/checkout', { plan: planKey });
+      const url = checkout.data.checkoutUrl as string;
+      const sessionId = checkout.data.sessionId as string;
+      await api.post('/billing/upgrade', { plan: planKey, sessionId });
+      setToast(`Plan updated to ${planKey}`);
+      loadUsage();
+    } catch {
+      setToast('Could not upgrade plan');
+    } finally {
+      setUpgrading(null);
+    }
+  };
 
   const plans = [
     {
       name: 'Free',
+      planKey: 'FREE',
       price: '₹0',
       period: 'forever',
       desc: 'Perfect for getting started.',
       features: [
-        '500 DMs/month',
+        '50 automations/month',
         '1 Instagram account',
         '3 active workflows',
         'Basic AI replies',
-        'Unified Live Inbox',
       ],
-      current: currentPlan === 'Free',
+      current: currentPlan === 'FREE',
     },
     {
       name: 'Growth',
+      planKey: 'PRO',
       price: '₹999',
       period: '/month',
-      desc: 'For growing creators and builders.',
+      desc: 'For growing creators.',
       features: [
         '5,000 DMs/month',
         '3 Instagram accounts',
-        'Unlimited active workflows',
-        'Advanced AI personality tuning',
-        'Lead capture & export',
-        'Priority email support',
+        'Unlimited workflows',
+        'Advanced AI tuning',
       ],
-      current: currentPlan === 'Growth',
+      current: currentPlan === 'PRO',
     },
     {
       name: 'Agency',
+      planKey: 'AGENCY',
       price: '₹2,999',
       period: '/month',
-      desc: 'Perfect for agency managers.',
+      desc: 'For agencies managing clients.',
       features: [
-        'Unlimited DMs',
+        'High-volume messaging',
         '10 Instagram accounts',
-        'White-label options',
-        'Team access (5 seats)',
-        'Custom AI fine-tuning',
-        'Dedicated support manager',
+        'Multi-workspace switcher',
+        'Team seats',
       ],
-      current: currentPlan === 'Agency',
+      current: currentPlan === 'AGENCY',
     },
   ];
 
   return (
-    <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6 min-h-screen bg-black text-white font-sans">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] pb-6">
+    <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6 min-h-screen">
+      {toast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-sm">
+          {toast}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between border-b border-[var(--af-border-subtle)] pb-6">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-white">Billing</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
-            Manage your subscription, plans, and monthly API limits
+          <h1 className="text-xl md:text-2xl font-bold text-[var(--af-text-primary)]">Billing</h1>
+          <p className="text-[var(--af-text-muted)] text-sm mt-0.5">
+            Plans update instantly in your workspace database
           </p>
         </div>
       </div>
 
-      {/* Usage Analytics Panel */}
-      <div className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-5 md:p-6 space-y-4">
-        <div className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.06)] pb-4">
-          <div className="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 select-none">
-            <BarChart3 size={18} />
-          </div>
+      <div className="af-glass rounded-2xl border border-[var(--af-border-subtle)] p-5 space-y-4">
+        <div className="flex items-center gap-3">
+          <BarChart3 size={18} className="text-orange-400" />
           <div>
-            <h3 className="text-white font-semibold text-sm">Monthly API Usage</h3>
-            <p className="text-[#A0A0A0] text-xs font-light mt-0.5">Track your comment-to-DM triggers usage</p>
+            <h3 className="text-sm font-semibold">Monthly usage</h3>
+            <p className="text-xs text-[var(--af-text-muted)]">
+              Status: {usage?.subscriptionStatus ?? '—'}
+            </p>
           </div>
         </div>
-
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs font-semibold">
-            <span className="text-[#A0A0A0]">DMs Sent (Current Cycle)</span>
-            <span className="text-white">{dmsUsed} / {dmsLimit} limits</span>
-          </div>
-          <div className="w-full bg-black h-2.5 rounded-full overflow-hidden border border-[rgba(255,255,255,0.06)]">
-            <div 
-              className="bg-gradient-to-r from-orange-500 to-pink-500 h-full rounded-full transition-all duration-500"
-              style={{ width: `${usagePercentage}%` }}
-            />
-          </div>
-          <p className="text-[10px] text-[#606060] font-light pt-1">
-            Usage resets automatically on the 1st of next month.
-          </p>
-        </div>
+        {loading ? (
+          <Loader2 className="animate-spin text-[var(--af-text-muted)]" size={18} />
+        ) : (
+          <>
+            <div className="flex justify-between text-xs">
+              <span>
+                {usage?.monthlyMessageCount ?? 0} / {usage?.monthlyLimit ?? 50} messages
+              </span>
+              <span>{usage?.usagePercentage ?? 0}%</span>
+            </div>
+            <div className="h-2 bg-black/30 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-violet-600 to-fuchsia-500 transition-all"
+                style={{ width: `${usage?.usagePercentage ?? 0}%` }}
+              />
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Warning Notice */}
-      <div className="p-4 rounded-xl flex items-start gap-3 bg-orange-500/5 border border-orange-500/10 text-xs leading-relaxed text-orange-400">
-        <ShieldAlert size={18} className="shrink-0 mt-0.5" />
-        <div>
-          <span className="font-semibold block mb-0.5">Exceeding Plan Limits</span>
-          <span>When your monthly limit is reached, automations will pause until the start of the next billing cycle. Upgrade to Growth to avoid disruption.</span>
-        </div>
-      </div>
-
-      {/* Pricing Grid */}
-      <div className="space-y-4">
-        <h3 className="text-white font-bold text-sm tracking-wide select-none">Available Subscription Plans</h3>
-        
-        <div className="grid md:grid-cols-3 gap-4">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`bg-[#0F0F0F] border rounded-2xl p-6 flex flex-col justify-between transition-all ${
-                plan.current 
-                  ? 'border-white bg-[#141414] shadow-[0_4px_20px_rgba(255,255,255,0.02)]' 
-                  : 'border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.18)]'
-              }`}
-            >
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h4 className="text-white font-bold text-sm">{plan.name} Plan</h4>
-                    <p className="text-[#606060] text-[10px] mt-0.5 font-light">{plan.desc}</p>
-                  </div>
-                  {plan.current && (
-                    <span className="bg-white text-black text-[9px] uppercase font-extrabold px-2.5 py-0.5 rounded-full">
-                      Active
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-baseline gap-1 mb-6 border-b border-[rgba(255,255,255,0.06)] pb-4">
-                  <span className="text-3xl font-bold text-white">{plan.price}</span>
-                  <span className="text-[#606060] text-xs font-light">{plan.period}</span>
-                </div>
-
-                <ul className="space-y-3 mb-6">
-                  {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-2.5 text-xs text-[#A0A0A0]">
-                      <Check size={14} className="text-orange-500 shrink-0 mt-0.5" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {!plan.current && (
-                <button
-                  type="button"
-                  className="w-full bg-white hover:opacity-88 active:scale-95 text-black py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm"
-                >
-                  Upgrade to {plan.name}
-                </button>
+      <div className="grid md:grid-cols-3 gap-4">
+        {plans.map((plan) => (
+          <div
+            key={plan.planKey}
+            className={`rounded-2xl border p-5 flex flex-col ${
+              plan.current
+                ? 'border-violet-500/40 bg-violet-500/5'
+                : 'border-[var(--af-border-subtle)] af-glass'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold">{plan.name}</h3>
+              {plan.current && (
+                <span className="text-[10px] bg-violet-600 text-white px-2 py-0.5 rounded-full font-bold">
+                  Current
+                </span>
               )}
             </div>
-          ))}
-        </div>
+            <p className="text-2xl font-bold">
+              {plan.price}
+              <span className="text-xs text-[var(--af-text-muted)] font-normal ml-1">
+                {plan.period}
+              </span>
+            </p>
+            <p className="text-xs text-[var(--af-text-muted)] mt-2 mb-4">{plan.desc}</p>
+            <ul className="space-y-2 flex-1">
+              {plan.features.map((f) => (
+                <li key={f} className="text-xs text-[var(--af-text-muted)] flex gap-2">
+                  <Check size={14} className="text-emerald-400 shrink-0" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              disabled={plan.current || !canUpgrade || upgrading === plan.planKey}
+              onClick={() => handleUpgrade(plan.planKey)}
+              className="mt-4 w-full py-2.5 rounded-xl text-xs font-semibold border border-[var(--af-border-subtle)] hover:bg-violet-500/10 disabled:opacity-50 transition-colors"
+            >
+              {upgrading === plan.planKey ? (
+                <Loader2 className="animate-spin mx-auto" size={16} />
+              ) : plan.current ? (
+                'Active plan'
+              ) : canUpgrade ? (
+                'Upgrade now'
+              ) : (
+                'Owner/admin only'
+              )}
+            </button>
+          </div>
+        ))}
       </div>
 
-      {/* Secure Gateway Info */}
-      <div className="text-center pt-4 select-none">
-        <div className="inline-flex items-center gap-2 border border-[rgba(255,255,255,0.06)] bg-[#0F0F0F] rounded-full px-4 py-2">
-          <CreditCard size={14} className="text-[#A0A0A0]" />
-          <span className="text-[#606060] text-[10px] font-medium uppercase tracking-wider">
-            Secure Payments via Razorpay & Stripe • Moneyback Guarantee
-          </span>
-        </div>
+      <div className="af-glass rounded-2xl border border-[var(--af-border-subtle)] p-4 flex gap-3 text-xs text-[var(--af-text-muted)]">
+        <ShieldAlert className="text-amber-400 shrink-0" size={18} />
+        <p>
+          Mock Stripe checkout flow: upgrade writes <code className="text-violet-300">plan</code> and{' '}
+          <code className="text-violet-300">subscriptionStatus</code> to your workspace in the database.
+          Connect real Stripe keys when ready.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-2 text-[var(--af-text-muted)] text-xs">
+        <CreditCard size={14} />
+        <span>Payments handled securely when Stripe is enabled.</span>
       </div>
     </div>
+  );
+}
+
+export default function BillingPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-[var(--af-text-muted)]">Loading billing…</div>}>
+      <BillingContent />
+    </Suspense>
   );
 }

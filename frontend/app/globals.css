@@ -1,6 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import '../styles/tokens.css';
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -12,13 +14,14 @@ html {
 }
 
 body {
-  background-color: #0A0A0F;
-  color: #F9FAFB;
+  background-color: var(--af-bg-base);
+  color: var(--af-text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Inter',
     'SF Pro Display', 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  transition: background-color var(--af-duration-normal), color var(--af-duration-normal);
 }
 
 /* Scrollbar */
@@ -32,10 +35,57 @@ body {
 /* Tap highlight */
 * { -webkit-tap-highlight-color: transparent; }
 
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+.sr-only:focus,
+.focus\:not-sr-only:focus {
+  position: fixed;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Mobile safe area above bottom nav */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.mobile-main-pad {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 768px) {
+  .mobile-main-pad {
+    padding-bottom: 0;
+  }
+}
+
 /* Focus ring */
 :focus-visible {
-  outline: 2px solid rgba(249,115,22,0.4);
+  outline: 2px solid rgba(139, 92, 246, 0.5);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Dashboard background */
@@ -111,4 +161,205 @@ body {
   text-transform: uppercase;
   opacity: 0.5;
   margin-bottom: 12px;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+.mask-fade-x {
+  mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+/* Phase 4 Premium Animations */
+@keyframes message-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-message-appear {
+  animation: message-appear 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Typing dot pulse */
+@keyframes typing-pulse {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.typing-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background-color: currentColor;
+  border-radius: 50%;
+  animation: typing-pulse 1.2s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* AI loading pulse (sparkles / purple theme) */
+@keyframes ai-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(139, 92, 246, 0.35);
+    border-color: rgba(139, 92, 246, 0.5);
+  }
+}
+
+.animate-ai-glow {
+  animation: ai-glow-pulse 2s infinite ease-in-out;
+}
+
+/* ─── Phase 6: AI Experience Layer ─── */
+
+/* Cursor blink for streaming text */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-cursor-blink {
+  animation: cursor-blink 0.8s ease-in-out infinite;
+}
+
+/* AI Thinking orb */
+@keyframes ai-orb-rotate {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.ai-thinking-orb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #8b5cf6;
+  border-right-color: #d946ef;
+  animation: ai-orb-rotate 0.8s linear infinite;
+}
+
+/* AI Thinking dots */
+@keyframes ai-dot-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40%            { transform: translateY(-5px); opacity: 1; }
+}
+.ai-thinking-dot {
+  animation: ai-dot-bounce 1.1s infinite ease-in-out;
+}
+
+/* Shimmer sweep (for shimmer cards) */
+@keyframes shimmer-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+.ai-shimmer-active {
+  border-color: rgba(139, 92, 246, 0.25) !important;
+}
+.ai-shimmer-sweep {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(139, 92, 246, 0.08) 50%,
+    transparent 60%
+  );
+  animation: shimmer-sweep 2s ease-in-out infinite;
+}
+
+/* Neural glow variants */
+.neural-glow-low {
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.08);
+}
+.neural-glow-medium {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.18), 0 0 40px rgba(217, 70, 239, 0.06);
+}
+.neural-glow-high {
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.35), 0 0 60px rgba(217, 70, 239, 0.15);
+}
+
+/* AI Copilot panel glow */
+@keyframes copilot-panel-glow {
+  0%, 100% {
+    box-shadow:
+      0 25px 60px rgba(0,0,0,0.6),
+      0 0 0 1px rgba(139, 92, 246, 0.12),
+      0 0 30px rgba(139, 92, 246, 0.06);
+  }
+  50% {
+    box-shadow:
+      0 25px 60px rgba(0,0,0,0.6),
+      0 0 0 1px rgba(139, 92, 246, 0.22),
+      0 0 40px rgba(139, 92, 246, 0.12);
+  }
+}
+.ai-copilot-panel-glow {
+  animation: copilot-panel-glow 3s ease-in-out infinite;
+}
+
+/* Copilot trigger button glow */
+@keyframes trigger-glow-pulse {
+  0%, 100% {
+    box-shadow:
+      0 8px 25px rgba(139, 92, 246, 0.4),
+      0 0 0 0 rgba(139, 92, 246, 0);
+  }
+  50% {
+    box-shadow:
+      0 12px 35px rgba(139, 92, 246, 0.55),
+      0 0 0 8px rgba(139, 92, 246, 0.04);
+  }
+}
+.ai-copilot-trigger-glow {
+  animation: trigger-glow-pulse 2.5s ease-in-out infinite;
+}
+
+/* Scrollbar-none utility */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scrollbar-thin utility */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 92, 246, 0.2) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar { width: 3px; }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 4px;
 }

@@ -39,8 +39,9 @@ export default function SettingsPage() {
   }, []);
 
   const handleSave = async () => {
+    const snapshot = { ...settings };
     setSaveLoading(true);
-    setMessage(null);
+    setMessage({ type: 'success', text: 'Saving…' });
     try {
       await api.post('/settings', {
         aiTone: settings.aiTone,
@@ -48,6 +49,7 @@ export default function SettingsPage() {
       });
       setMessage({ type: 'success', text: 'Settings saved successfully!' });
     } catch (e) {
+      setSettings(snapshot);
       setMessage({ type: 'error', text: 'Failed to save settings. Please try again.' });
       console.error(e);
     } finally {
@@ -57,12 +59,13 @@ export default function SettingsPage() {
 
   const handleConnectInsta = async () => {
     try {
-      const response = await api.post('/settings/instagram/connect');
-      if (response.data?.username) {
+      const response = await api.post('/settings/instagram/connect', {});
+      const username = response.data?.instaUsername ?? response.data?.username;
+      if (username || response.data?.instaConnected) {
         setSettings(prev => ({
           ...prev,
           instaConnected: true,
-          instaUsername: response.data.username,
+          instaUsername: username ?? 'mock_business',
         }));
         setMessage({ type: 'success', text: 'Successfully connected Instagram account!' });
       }
@@ -103,7 +106,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 min-h-screen bg-[#0A0A0F] text-white font-sans">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 min-h-screen bg-slate-900 text-white font-sans">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] pb-6">
         <div>
@@ -127,7 +130,7 @@ export default function SettingsPage() {
       )}
 
       {/* Section 1: Instagram Integration */}
-      <div className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-5 md:p-6 space-y-4">
+      <div className="bg-slate-800 border border-[rgba(255,255,255,0.08)] rounded-2xl p-5 md:p-6 space-y-4">
         <div className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.06)] pb-4">
           <div className="w-9 h-9 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 select-none">
             <Instagram size={18} />
@@ -176,7 +179,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Section 2: AI Automation Tuning */}
-      <div className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl p-5 md:p-6 space-y-5">
+      <div className="bg-slate-800 border border-[rgba(255,255,255,0.08)] rounded-2xl p-5 md:p-6 space-y-5">
         <div className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.06)] pb-4">
           <div className="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 select-none">
             <Sparkles size={18} />
@@ -199,14 +202,13 @@ export default function SettingsPage() {
                     key={tone.id}
                     type="button"
                     onClick={() => setSettings(prev => ({ ...prev, aiTone: tone.label }))}
-                    className={`px-3 py-3 rounded-xl border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+                    className={`px-3 py-3 rounded-xl border text-xs font-semibold transition-all flex items-center justify-center ${
                       isSelected
                         ? 'bg-white text-black border-white'
                         : 'bg-black border-[rgba(255,255,255,0.08)] text-gray-400 hover:text-white hover:border-gray-600'
                     }`}
                   >
-                    <span>{tone.emoji}</span>
-                    <span>{tone.label}</span>
+                    {tone.label}
                   </button>
                 );
               })}

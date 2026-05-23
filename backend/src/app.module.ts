@@ -21,7 +21,6 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 
 import { PrismaModule } from './prisma/prisma.module';
-import { PrismaService } from './prisma.service';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -34,6 +33,11 @@ import { AIModule } from './modules/ai/ai.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { SearchModule } from './modules/search/search.module';
+import { SecurityModule } from './modules/security/security.module';
+import { MarketplaceModule } from './modules/marketplace/marketplace.module';
+
 
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -51,11 +55,14 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     MessagesModule,
     AIModule,
     ContactsModule,
+    SettingsModule,
     BillingModule,
     AnalyticsModule,
+    SearchModule,
+    SecurityModule,
+    MarketplaceModule,
   ],
   providers: [
-    PrismaService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

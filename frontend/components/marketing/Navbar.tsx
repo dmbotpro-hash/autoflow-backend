@@ -41,6 +41,7 @@ export default function Navbar() {
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-8 select-none">
           {[
+            ['Demo', '#demo'],
             ['Features', '#features'],
             ['How It Works', '#how-it-works'],
             ['Pricing', '#pricing'],
@@ -83,10 +84,10 @@ export default function Navbar() {
       {/* Mobile Glassy Dropdown Menu Drawer */}
       {menuOpen && (
         <div className="absolute top-[64px] left-0 right-0 z-50 bg-[#000000] border-b border-[rgba(255,255,255,0.08)] px-6 py-6 flex flex-col gap-4 font-sans select-none animate-text-reveal">
-          {['Features', 'How It Works', 'Pricing'].map((item) => (
+          {['Demo', 'Features', 'How It Works', 'Pricing'].map((item) => (
             <a
               key={item}
-              href={`#${item.toLowerCase().replace(' ', '-')}`}
+              href={`#${item.toLowerCase().replace(/ /g, '-')}`}
               className="text-[#A0A0A0] hover:text-white text-[14px] font-medium py-1 transition-colors duration-150"
               onClick={() => setMenuOpen(false)}
             >

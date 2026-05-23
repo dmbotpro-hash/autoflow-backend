@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/api/auth.api';
 import { TrendingUp, Users, AlertCircle } from 'lucide-react';
+import { EmptyState } from '@/components/empty/EmptyState';
+import { VirtualList } from '@/components/ui/VirtualList';
 
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<any[]>([]);
@@ -68,16 +70,46 @@ export default function ContactsPage() {
       )}
 
       {!error && contacts.length === 0 && !loading && (
-        <div className="text-center py-16 border border-dashed border-white/10 rounded-xl">
-          <Users size={36} className="mx-auto text-gray-700 mb-3" />
-          <p className="text-white font-medium text-sm">No contacts yet</p>
-          <p className="text-gray-500 text-xs mt-1 max-w-xs mx-auto">
-            Contacts appear automatically when users interact with your automations
-          </p>
+        <EmptyState
+          icon={<Users size={32} className="text-violet-400" />}
+          title="No contacts yet"
+          description="Contacts appear when users DM you or trigger a workflow. Connect Instagram and launch your first automation."
+          primaryAction={{ label: 'Connect Instagram', href: '/settings' }}
+          secondaryAction={{ label: 'Create workflow', href: '/workflows' }}
+        />
+      )}
+
+      {contacts.length > 0 && !loading && !error && contacts.length > 25 && (
+        <div className="af-glass rounded-2xl border border-[var(--af-border-subtle)] overflow-hidden">
+          <VirtualList
+            items={contacts}
+            height={Math.min(640, contacts.length * 72)}
+            itemHeight={72}
+            getKey={(c) => c.id}
+            renderItem={(contact) => {
+              const badge = getLeadBadge(contact.leadScore);
+              return (
+                <div className="flex items-center gap-3 px-4 h-full border-b border-[var(--af-border-subtle)]">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-semibold uppercase shrink-0">
+                    {contact.username?.charAt(0) || 'U'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">
+                      {contact.name || 'Anonymous'}
+                    </p>
+                    <p className="text-xs text-gray-500">@{contact.username}</p>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${badge.color}`}>
+                    {badge.label}
+                  </span>
+                </div>
+              );
+            }}
+          />
         </div>
       )}
 
-      {contacts.length > 0 && !loading && !error && (
+      {contacts.length > 0 && !loading && !error && contacts.length <= 25 && (
         <div className="bg-[#0F0F0F] border border-[rgba(255,255,255,0.08)] rounded-2xl overflow-x-auto shadow-sm">
           <table className="w-full text-left border-collapse min-w-[600px]">
             <thead className="bg-[#141414]/50 border-b border-[rgba(255,255,255,0.08)] text-[#A0A0A0] text-[10px] font-bold uppercase tracking-wider select-none">

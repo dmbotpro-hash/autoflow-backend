@@ -1,9 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { resolveWorkspaceId } from '../utils/resolve-workspace';
 
 export const WorkspaceId = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): string => {
+  (_data: unknown, ctx: ExecutionContext): string => {
     const request = ctx.switchToHttp().getRequest();
-    const user = request.user;
-    return user?.workspaces?.[0]?.workspaceId || '';
+    return resolveWorkspaceId(request);
   },
 );

@@ -18,6 +18,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InstagramService } from '../instagram/instagram.service';
 import { SubscriptionService } from '../billing/subscription.service';
+import { MessagesGateway } from '../messages/messages.gateway';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 interface CommentTriggerPayload {
   workspaceId: string;
@@ -38,6 +40,8 @@ export class WorkflowEngineService {
     private prisma: PrismaService,
     private instagramService: InstagramService,
     private subscriptionService: SubscriptionService,
+    private messagesGateway: MessagesGateway,
+    private analyticsService: AnalyticsService,
   ) {}
 
   async handleCommentTrigger(payload: CommentTriggerPayload) {
@@ -153,6 +157,7 @@ export class WorkflowEngineService {
     await this.saveOutboundMessage(payload, config.dmMessage, config.publicReply);
     await this.logUsage(payload.workspaceId, 'message_sent', {
       workflowId: workflow.id,
+      workflowName: workflow.name,
       commenterId: payload.commenterId,
     });
 
@@ -254,9 +259,11 @@ export class WorkflowEngineService {
 
   private async logUsage(workspaceId: string, type: string, metadata?: any) {
     try {
-      await this.prisma.usageLog.create({
-        data: { workspaceId, type, metadata },
+      const log = await this.prisma.usageLog.create({
+        data: { workspaceId, type, count: 1, metadata },
       });
+      const event = this.analyticsService.formatUsageLogEvent(log);
+      this.messagesGateway.emitActivityEvent(workspaceId, event);
     } catch (err: any) {
       this.logger.error(`[WorkflowEngineService] logUsage failed: ${err?.message ?? err}`);
     }

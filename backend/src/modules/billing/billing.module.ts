@@ -17,11 +17,12 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { SubscriptionService } from './subscription.service';
 import { SubscriptionController } from './subscription.controller';
+import { RolesGuard } from '../../common/guards/roles.guard';
 
 @Module({
   imports: [PrismaModule],
   controllers: [SubscriptionController],
-  providers: [SubscriptionService],
+  providers: [SubscriptionService, RolesGuard],
   exports: [SubscriptionService],
 })
 export class BillingModule {}

@@ -1,26 +1,20 @@
-/**
- * FILE: messages.service.ts
- * PURPOSE: Implements business logic for conversation and message persistence/sending
- * 
- * DEPENDENCIES:
- * - PrismaService (Conversation, Message)
- * - Instagram API client (shell)
- * 
- * EXPORTS:
- * - MessagesService class
- * 
- * NEXT SESSION INSTRUCTION:
- * - Implement methods to get conversations, get messages, and send outbound messages.
- */
-
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { InstagramService } from '../instagram/instagram.service';
+import { MessagesGateway } from './messages.gateway';
 
 @Injectable()
 export class MessagesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private instagramService: InstagramService,
+    private messagesGateway: MessagesGateway,
+  ) {}
 
-  // Workspace ki saari conversations (last message preview)
   async getConversations(workspaceId: string) {
     return this.prisma.conversation.findMany({
       where: { workspaceId },
@@ -32,6 +26,9 @@ export class MessagesService {
             name: true,
             avatarUrl: true,
             instagramId: true,
+            leadScore: true,
+            tags: true,
+            notes: true,
           },
         },
         socialAccount: true,
@@ -44,7 +41,6 @@ export class MessagesService {
     });
   }
 
-  // Ek conversation ke saare messages
   async getMessages(workspaceId: string, conversationId: string) {
     const conversation = await this.prisma.conversation.findFirst({
       where: { id: conversationId, workspaceId },
@@ -70,7 +66,6 @@ export class MessagesService {
     return { conversation, messages };
   }
 
-  // Manual/outbound message save (UI send ke baad)
   async saveOutboundMessage(
     workspaceId: string,
     conversationId: string,
@@ -78,9 +73,30 @@ export class MessagesService {
   ) {
     const conversation = await this.prisma.conversation.findFirst({
       where: { id: conversationId, workspaceId },
+      include: {
+        contact: true,
+        socialAccount: true,
+      },
     });
 
     if (!conversation) throw new NotFoundException('Conversation not found');
+
+    const recipientId = conversation.contact?.instagramId;
+    const accessToken = conversation.socialAccount?.accessToken;
+
+    let dmSent = false;
+    if (recipientId && accessToken) {
+      dmSent = await this.instagramService.sendDM(
+        accessToken,
+        recipientId,
+        content,
+      );
+      if (!dmSent) {
+        throw new BadRequestException(
+          'Failed to send message to Instagram. Check account connection and tokens.',
+        );
+      }
+    }
 
     const message = await this.prisma.message.create({
       data: {
@@ -96,10 +112,17 @@ export class MessagesService {
       data: { updatedAt: new Date() },
     });
 
-    return message;
+    this.messagesGateway.emitNewMessage(workspaceId, conversationId, {
+      id: message.id,
+      content: message.content,
+      direction: message.direction,
+      sentAt: message.sentAt,
+      isAiGenerated: message.isAiGenerated,
+    });
+
+    return { message, dmSent };
   }
 
-  // Conversation status update (open/closed)
   async updateStatus(
     workspaceId: string,
     conversationId: string,
@@ -111,13 +134,16 @@ export class MessagesService {
 
     if (!conversation) throw new NotFoundException('Conversation not found');
 
-    return this.prisma.conversation.update({
+    const updated = await this.prisma.conversation.update({
       where: { id: conversationId },
       data: { status },
     });
+
+    this.messagesGateway.emitConversationUpdate(workspaceId, updated);
+
+    return updated;
   }
 
-  // Dashboard stats ke liye counts
   async getDashboardStats(workspaceId: string) {
     const [totalMessages, totalContacts, activeConversations, automationCount] =
       await Promise.all([
@@ -143,5 +169,3 @@ export class MessagesService {
     };
   }
 }
-
-

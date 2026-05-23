@@ -14,20 +14,21 @@ import { MessagesModule } from '../messages/messages.module';
 import { AIModule } from '../ai/ai.module';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { WorkflowsModule } from '../workflows/workflows.module';
-import { PrismaService } from '../../prisma.service';
 import { FaqModule } from '../faq/faq.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
   imports: [
-    HttpModule, 
-    MessagesModule, 
-    AIModule, 
+    HttpModule,
+    forwardRef(() => MessagesModule),
+    AIModule,
     FaqModule,
     PrismaModule,
-    forwardRef(() => WorkflowsModule) // 👈 Circular dependency fix ki
+    AnalyticsModule,
+    forwardRef(() => WorkflowsModule),
   ],
   controllers: [InstagramController, WebhookController],
-  providers: [InstagramService, WebhookService, PrismaService],
+  providers: [InstagramService, WebhookService],
   exports: [InstagramService],
 })
 export class InstagramModule {}

@@ -24,6 +24,7 @@ import { InstagramService } from './instagram.service';
 import { MessagesGateway } from '../messages/messages.gateway';
 import { AiService } from '../ai/ai.service';
 import { FaqService } from '../faq/faq.service';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 import { Injectable } from '@nestjs/common';
 
@@ -41,7 +42,19 @@ export class WebhookService {
     private messagesGateway: MessagesGateway,
     private aiService: AiService,
     private faqService: FaqService,
+    private analyticsService: AnalyticsService,
   ) {}
+
+  private emitActivity(workspaceId: string, log: {
+    id: string;
+    type: string;
+    count: number;
+    createdAt: Date;
+    metadata?: unknown;
+  }) {
+    const event = this.analyticsService.formatUsageLogEvent(log);
+    this.messagesGateway.emitActivityEvent(workspaceId, event);
+  }
 
   // Main entry point — Meta se aane wale webhook events process karta hai
   async processWebhook(payload: MetaWebhookPayload) {
@@ -178,6 +191,14 @@ export class WebhookService {
             instagramId: senderId,
           },
         });
+        this.messagesGateway.emitActivityEvent(socialAccount.workspaceId, {
+          id: `contact-${contact.id}`,
+          type: 'lead_captured',
+          title: 'Lead captured',
+          description: 'New Instagram contact added',
+          severity: 'info',
+          createdAt: contact.createdAt.toISOString(),
+        });
       }
 
       // Conversation dhundho ya banao
@@ -266,13 +287,14 @@ export class WebhookService {
           },
         });
 
-        await this.prisma.usageLog.create({
+        const faqLog = await this.prisma.usageLog.create({
           data: {
             workspaceId: socialAccount.workspaceId,
             type: 'faq_intercept',
             count: 1,
           },
         });
+        this.emitActivity(socialAccount.workspaceId, faqLog);
 
         this.messagesGateway.emitNewMessage(socialAccount.workspaceId, conversation.id, {
           id: outboundFaqMsg.id,
@@ -315,19 +337,26 @@ export class WebhookService {
           content: m.content,
         }));
 
-      // Business context
+      const workspace = await this.prisma.workspace.findUnique({
+        where: { id: socialAccount.workspaceId },
+        select: { name: true, aiTone: true, aiPrompt: true },
+      });
+
       const businessContext = `
-Business Name: AutoFlow Customer
+Business Name: ${workspace?.name ?? 'AutoFlow Customer'}
 Platform: Instagram
 Language: Hindi/English mix preferred
       `;
 
-      // AI reply generate
       const aiResult = await this.aiService.generateReply(
         messageText,
         intentResult.intent,
         businessContext,
         conversationHistory,
+        {
+          customTone: workspace?.aiTone,
+          customPrompt: workspace?.aiPrompt,
+        },
       );
 
       if (!aiResult.reply) {
@@ -357,13 +386,14 @@ Language: Hindi/English mix preferred
         },
       });
 
-      await this.prisma.usageLog.create({
+      const aiLog = await this.prisma.usageLog.create({
         data: {
           workspaceId: socialAccount.workspaceId,
           type: 'ai_reply',
           count: 1,
         },
       });
+      this.emitActivity(socialAccount.workspaceId, aiLog);
 
       // Inbox update
       this.messagesGateway.emitNewMessage(socialAccount.workspaceId, conversation.id, {

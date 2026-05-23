@@ -12,13 +12,17 @@ import { InstagramModule } from '../instagram/instagram.module';
 import { AIModule } from '../ai/ai.module';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { BillingModule } from '../billing/billing.module';
+import { MessagesModule } from '../messages/messages.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
   imports: [
-    forwardRef(() => InstagramModule), // 👈 Circular dependency fix ki
-    AIModule, 
+    forwardRef(() => InstagramModule),
+    forwardRef(() => MessagesModule),
+    AnalyticsModule,
+    AIModule,
     PrismaModule,
-    BillingModule
+    BillingModule,
   ],
   controllers: [WorkflowsController],
   providers: [WorkflowsService, WorkflowEngineService],

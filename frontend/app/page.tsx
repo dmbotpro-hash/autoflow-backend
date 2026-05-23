@@ -1,50 +1,55 @@
 import Navbar from '@/components/marketing/Navbar';
 import HeroSection from '@/components/marketing/HeroSection';
+import TrustedBySection from '@/components/marketing/TrustedBySection';
+import LiveDemoSection from '@/components/marketing/LiveDemoSection';
 import HowItWorks from '@/components/marketing/HowItWorks';
 import FeaturesSection from '@/components/marketing/FeaturesSection';
-import PricingSection from '@/components/marketing/PricingSection';
+import WorkflowPreviewSection from '@/components/marketing/WorkflowPreviewSection';
+import AIAutomationSection from '@/components/marketing/AIAutomationSection';
+import InboxPreviewSection from '@/components/marketing/InboxPreviewSection';
+import AnalyticsPreviewSection from '@/components/marketing/AnalyticsPreviewSection';
 import TestimonialsSection from '@/components/marketing/TestimonialsSection';
+import PricingSection from '@/components/marketing/PricingSection';
 import ComplianceAndFaq from '@/components/marketing/ComplianceAndFaq';
+import FinalCTASection from '@/components/marketing/FinalCTASection';
 import Footer from '@/components/marketing/Footer';
-import Link from 'next/link';
 
 export const metadata = {
-  title: 'AutoFlow — Instagram Comment-to-DM Automation for Indian Businesses',
+  title: 'AutoFlow — Turn Instagram Comments Into AI-Powered Revenue',
   description:
-    'AutoFlow se Instagram automation karo. Koi bhi keyword comment kare — turant DM jaaye. Leads capture karo, sales badhao. 24/7 automatic. Free plan available.',
+    'AutoFlow: comment-to-DM automation, AI inbox, workflows, and analytics for Indian creators. Free plan. Meta-approved.',
 };
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-black text-white premium-radial-glow premium-dot-grid">
+    <div className="min-h-screen bg-[#050816] text-white">
       <Navbar />
+      {/* 1. Hero — cinematic black */}
       <HeroSection />
+      {/* 2. Trusted — white */}
+      <TrustedBySection />
+      {/* 3. Live demo — dark */}
+      <LiveDemoSection />
+      {/* 4. How it works — light */}
       <HowItWorks />
+      {/* 5. Features — white */}
       <FeaturesSection />
+      {/* 6. Workflow builder — dark */}
+      <WorkflowPreviewSection />
+      {/* 7. AI — cinematic black */}
+      <AIAutomationSection />
+      {/* 8. Inbox preview — white */}
+      <InboxPreviewSection />
+      {/* 9. Analytics — light */}
+      <AnalyticsPreviewSection />
+      {/* 10. Testimonials — dark */}
       <TestimonialsSection />
+      {/* 11. Pricing — white */}
       <PricingSection />
-      
-      {/* Safe Trust compliance and Accordion FAQs */}
+      {/* 12. FAQ + compliance — dark */}
       <ComplianceAndFaq />
-
-      {/* Final CTA in CreatorFlow Monochrome Style */}
-      <section className="bg-black/40 py-24 px-6 text-center border-t border-[rgba(255,255,255,0.06)] select-none">
-        <div className="max-w-2xl mx-auto flex flex-col items-center">
-          <h2 className="text-white text-3xl sm:text-[36px] font-bold leading-[1.15] tracking-tight mb-4 font-sans animate-letter-spacing animate-text-reveal">
-            Aaj Hi Shuru Karo — Bilkul Free
-          </h2>
-          <p className="text-[#A0A0A0] text-base leading-relaxed mb-8 max-w-md font-normal animate-text-reveal-slow">
-            500 DMs/month free. Credit card nahi chahiye. 2 minute mein setup.
-          </p>
-          <Link
-            href="/signup"
-            className="bg-white hover:bg-neutral-200 text-black font-semibold text-sm px-8 py-4 rounded-full transition-all duration-200 hover:scale-[1.02] active:scale-95 inline-block shadow-md shadow-white/5 animate-text-reveal-slow"
-          >
-            Free Mein Shuru Karo →
-          </Link>
-        </div>
-      </section>
-
+      {/* 13. Final CTA — cinematic */}
+      <FinalCTASection />
       <Footer />
     </div>
   );

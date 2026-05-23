@@ -1,19 +1,3 @@
-/**
- * FILE: messages.gateway.ts
- * PURPOSE: Websocket gateway for real-time message updates to the dashboard inbox
- * 
- * DEPENDENCIES:
- * - NestJS WebSocket gateway
- * - Socket.io server (or nestjs ws)
- * - MessagesService (shell)
- * 
- * EXPORTS:
- * - MessagesGateway class
- * 
- * NEXT SESSION INSTRUCTION:
- * - Implement websocket events for new messages and conversation updates.
- */
-
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -25,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
+import type { ActivityEventDto } from '../analytics/analytics.types';
 
 @WebSocketGateway({
   cors: {
@@ -77,7 +62,10 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
   ) {
     client
       .to(`conversation_${data.conversationId}`)
-      .emit('typing', { isTyping: data.isTyping });
+      .emit('typing', {
+        conversationId: data.conversationId,
+        isTyping: data.isTyping,
+      });
   }
 
   emitNewMessage(
@@ -97,8 +85,30 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   emitConversationUpdate(workspaceId: string, conversation: any) {
-    this.server.to(`workspace_${workspaceId}`).emit('conversation_updated', conversation);
+    this.server
+      .to(`workspace_${workspaceId}`)
+      .emit('conversation_updated', conversation);
+  }
+
+  /**
+   * Broadcast an AI typing indicator to all clients watching a conversation.
+   * @param conversationId  the room to target
+   * @param isTyping        true = AI is composing, false = done
+   */
+  emitAiTyping(conversationId: string, isTyping: boolean) {
+    this.server
+      .to(`conversation_${conversationId}`)
+      .emit('ai_typing', { conversationId, isTyping });
+    this.logger.log(
+      `Emitted ai_typing(${isTyping}) to conversation: ${conversationId}`,
+    );
+  }
+
+  /** Real-time activity for analytics dashboard & notification center */
+  emitActivityEvent(workspaceId: string, event: ActivityEventDto) {
+    this.server
+      .to(`workspace_${workspaceId}`)
+      .emit('activity_event', event);
+    this.logger.log(`Emitted activity_event (${event.type}) workspace=${workspaceId}`);
   }
 }
-
-
