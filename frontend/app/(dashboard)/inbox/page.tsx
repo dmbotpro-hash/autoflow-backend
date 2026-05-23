@@ -255,10 +255,10 @@ export default function InboxPage() {
 
   if (loading && conversations.length === 0) {
     return (
-      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center premium-dot-grid">
+      <div className="min-h-screen flex items-center justify-center premium-dot-grid" style={{ background: 'var(--bg-main)' }}>
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
-          <span className="text-xs text-[#A0A0A0] font-light">Loading inbox workspace...</span>
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#818CF8' }} />
+          <span className="text-xs font-light" style={{ color: 'var(--text-muted)' }}>Loading inbox workspace...</span>
         </div>
       </div>
     );
@@ -266,7 +266,7 @@ export default function InboxPage() {
 
   if (!loading && conversations.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#0A0A0F] text-white font-sans premium-dot-grid premium-radial-glow items-center justify-center p-6">
+      <div className="min-h-screen flex flex-col font-sans premium-dot-grid premium-radial-glow items-center justify-center p-6" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>
         <div className="max-w-lg w-full">
           <EmptyState
             icon={<Instagram className="text-pink-400" size={32} />}
@@ -281,27 +281,30 @@ export default function InboxPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0A0A0F] text-white overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col overflow-hidden font-sans" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>
       {/* Header Panel */}
-      <div className="bg-[#0F0F0F]/90 backdrop-blur-md border-b border-[rgba(255,255,255,0.08)] px-6 py-4 flex justify-between items-center shrink-0">
+      <div className="backdrop-blur-md border-b px-6 py-4 flex justify-between items-center shrink-0" style={{ background: 'rgba(8,8,15,0.90)', borderColor: 'var(--border-glass)' }}>
         <div>
-          <h1 className="text-sm font-bold text-white flex items-center gap-2 tracking-tight">
-            <MessageCircle size={16} className="text-orange-500" />
+          <h1 className="text-sm font-bold flex items-center gap-2 tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            <MessageCircle size={16} style={{ color: '#818CF8' }} />
             Live Inbox & Team Workspace
           </h1>
-          <p className="text-[10px] text-[#A0A0A0] mt-0.5 font-light">
+          <p className="text-[10px] mt-0.5 font-light" style={{ color: 'var(--text-muted)' }}>
             Realtime updates active — Synced with backend API & WebSockets
           </p>
         </div>
         <div className="flex items-center gap-3">
           {crmSaving && (
-            <span className="text-[10px] text-gray-400 flex items-center gap-1.5 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full animate-pulse">
+            <span className="text-[10px] flex items-center gap-1.5 px-2.5 py-1 rounded-full animate-pulse" style={{ color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)' }}>
               <Loader2 size={10} className="animate-spin" /> Autosaving...
             </span>
           )}
-          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1.5">
-            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-            <span className="text-emerald-400 text-[10px] font-semibold tracking-wider uppercase">Live Socket</span>
+          <div
+            className="flex items-center gap-2 rounded-full px-3 py-1.5"
+            style={{ background: 'var(--alert-success-bg)', border: '1px solid var(--alert-success-border)' }}
+          >
+            <div className="w-1.5 h-1.5 bg-[#34D399] rounded-full animate-pulse" />
+            <span className="text-[10px] font-semibold tracking-wider uppercase" style={{ color: '#34D399' }}>Live Socket</span>
           </div>
         </div>
       </div>
@@ -309,10 +312,11 @@ export default function InboxPage() {
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar Conversations List */}
         <div
-          className={`${mobileView === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-80 flex-shrink-0 border-r border-gray-800/80 flex-col h-full bg-[#0F0F0F]`}
+          className={`${mobileView === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-80 flex-shrink-0 border-r flex-col h-full`}
+          style={{ background: 'var(--bg-sidebar)', borderColor: 'var(--border-glass)' }}
         >
           {/* Search bar */}
-          <div className="p-4 border-b border-[rgba(255,255,255,0.06)]">
+          <div className="p-4 border-b" style={{ borderColor: 'var(--border-glass)' }}>
             <div className="relative">
               <Search className="absolute left-3 top-2.5 text-[#606060]" size={13} />
               <input
@@ -321,7 +325,10 @@ export default function InboxPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 aria-label="Filter conversations by name"
-                className="w-full bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-[#606060] focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-all"
+                className="w-full rounded-xl pl-9 pr-4 py-2.5 text-xs outline-none transition-all"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)' }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'var(--border-glow)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'var(--border-glass)')}
               />
             </div>
           </div>
@@ -344,11 +351,17 @@ export default function InboxPage() {
                       onClick={() => handleSelectConversation(conv.id)}
                       className={`h-full px-4 py-3 cursor-pointer flex items-start gap-3 relative group transition-colors ${
                         isSelected
-                          ? 'bg-[#141414] border-l-2 border-orange-500'
-                          : 'hover:bg-[#141414]/30'
+                          ? 'border-l-2 border-[#818CF8]'
+                          : ''
                       }`}
+                      style={isSelected ? { background: 'rgba(129,140,248,0.06)' } : undefined}
+                      onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(129,140,248,0.04)'; }}
+                      onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
                     >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center text-xs font-bold uppercase shrink-0">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold uppercase shrink-0 text-white"
+                        style={{ background: 'linear-gradient(135deg, #818CF8, #22D3EE)' }}
+                      >
                         {conv.name.charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -378,12 +391,18 @@ export default function InboxPage() {
                   onClick={() => handleSelectConversation(conv.id)}
                   className={`p-4 cursor-pointer flex items-start gap-3 relative group transition-colors ${
                     isSelected
-                      ? 'bg-[#141414] border-l-2 border-orange-500'
-                      : 'hover:bg-[#141414]/30'
+                      ? 'border-l-2 border-[#818CF8]'
+                      : ''
                   }`}
+                  style={isSelected ? { background: 'rgba(129,140,248,0.06)' } : undefined}
+                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(129,140,248,0.04)'; }}
+                  onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
                 >
                   {/* Quick Actions (Hover Over Row) */}
-                  <div className="absolute right-3 top-3 hidden group-hover:flex items-center gap-1.5 bg-[#0F0F0F]/90 backdrop-blur border border-[rgba(255,255,255,0.08)] shadow-xl rounded-lg p-1 transition-all duration-150 z-20">
+                  <div
+                    className="absolute right-3 top-3 hidden group-hover:flex items-center gap-1.5 backdrop-blur shadow-xl rounded-lg p-1 transition-all duration-150 z-20"
+                    style={{ background: 'rgba(8,8,15,0.90)', border: '1px solid var(--border-glass)' }}
+                  >
                     <button
                       type="button"
                       title={conv.status === 'open' ? 'Resolve/Close Conversation' : 'Re-open Conversation'}
@@ -420,7 +439,10 @@ export default function InboxPage() {
 
                   {/* Avatar */}
                   <div className="relative">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center text-xs font-bold uppercase shadow-md select-none">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold uppercase shadow-md select-none text-white"
+                      style={{ background: 'linear-gradient(135deg, #818CF8, #22D3EE)' }}
+                    >
                       {conv.name.charAt(0)}
                     </div>
                     {hasAiActive && (
@@ -466,10 +488,11 @@ export default function InboxPage() {
 
         {/* Selected Chat Room */}
         <div
-          className={`${mobileView === 'chat' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-w-0 bg-[#0A0A0F]`}
+          className={`${mobileView === 'chat' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-w-0`}
+          style={{ background: 'var(--bg-main)' }}
         >
           {/* Active Chat Header */}
-          <div className="bg-[#0F0F0F]/80 backdrop-blur-sm border-b border-[rgba(255,255,255,0.08)] px-6 py-3.5 flex justify-between items-center">
+          <div className="backdrop-blur-sm border-b px-6 py-3.5 flex justify-between items-center" style={{ background: 'rgba(8,8,15,0.80)', borderColor: 'var(--border-glass)' }}>
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -495,12 +518,19 @@ export default function InboxPage() {
               type="button"
               onClick={() => patchSelected({ aiActive: !selectedConv.aiActive })}
               className={`text-[10px] flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all duration-300 ${
-                selectedConv.aiActive
-                  ? 'bg-purple-950/40 border-purple-500/30 text-purple-300 hover:border-purple-500/60 shadow-[0_0_12px_rgba(139,92,246,0.1)]'
-                  : 'bg-black/40 border-[rgba(255,255,255,0.08)] text-[#A0A0A0] hover:text-white'
+                selectedConv.aiActive ? 'shadow-[0_0_12px_rgba(129,140,248,0.12)]' : 'hover:text-white'
               }`}
+              style={selectedConv.aiActive ? {
+                background: 'rgba(129,140,248,0.10)',
+                border: '1px solid rgba(129,140,248,0.25)',
+                color: '#C4B5FD',
+              } : {
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid var(--border-glass)',
+                color: 'var(--text-muted)',
+              }}
             >
-              <Sparkles size={11} className={selectedConv.aiActive ? 'animate-spin-slow text-purple-400' : ''} />
+              <Sparkles size={11} style={{ color: selectedConv.aiActive ? '#818CF8' : undefined }} className={selectedConv.aiActive ? 'animate-spin-slow' : ''} />
               AI Assistant {selectedConv.aiActive ? 'Active' : 'Off'}
             </button>
           </div>
@@ -573,7 +603,10 @@ export default function InboxPage() {
                   key={idx}
                   type="button"
                   onClick={() => handleInputChange(reply)}
-                  className="text-[10px] bg-[#141414] hover:bg-[#1E1E2A] text-[#C0C0C0] hover:text-white border border-[rgba(255,255,255,0.08)] hover:border-purple-500/40 px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all duration-200 shadow-md transform active:scale-95"
+                  className="text-[10px] px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all duration-200 shadow-md transform active:scale-95"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-glass)', color: 'var(--text-secondary)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-glow)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-glass)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
                 >
                   {reply}
                 </button>
@@ -611,7 +644,8 @@ export default function InboxPage() {
           {/* Chat Composer Input Form */}
           <form
             onSubmit={handleSendMessage}
-            className="p-4 border-t border-[rgba(255,255,255,0.08)] bg-[#0F0F0F]/65 flex gap-3 items-center shrink-0"
+            className="p-4 border-t flex gap-3 items-center shrink-0"
+            style={{ borderColor: 'var(--border-glass)', background: 'rgba(8,8,15,0.65)' }}
           >
             {/* Hidden Input File */}
             <input
@@ -646,14 +680,18 @@ export default function InboxPage() {
               value={inputText}
               onChange={(e) => handleInputChange(e.target.value)}
               placeholder={attachments.length > 0 ? "Add message details..." : "Type custom DM response..."}
-              className="flex-1 bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-3 text-sm md:text-xs text-white placeholder-[#606060] focus:outline-none focus:border-orange-500/40 focus:ring-1 focus:ring-orange-500/20 transition-all font-light"
+              className="flex-1 rounded-xl px-4 py-3 text-sm md:text-xs outline-none transition-all font-light"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)' }}
+              onFocus={e => (e.currentTarget.style.borderColor = 'var(--border-glow)')}
+              onBlur={e => (e.currentTarget.style.borderColor = 'var(--border-glass)')}
             />
 
             {/* Send CTA */}
             <button
               type="submit"
               disabled={sending || (!inputText.trim() && attachments.length === 0)}
-              className="bg-white hover:bg-gray-100 text-black p-3.5 rounded-xl disabled:opacity-30 disabled:hover:bg-white hover:scale-105 active:scale-95 transition-all shadow-lg"
+              className="p-3.5 rounded-xl disabled:opacity-30 hover:scale-105 active:scale-95 transition-all text-white"
+              style={{ background: 'linear-gradient(135deg, #818CF8, #22D3EE)', boxShadow: '0 0 16px rgba(129,140,248,0.35)' }}
             >
               <Send size={13} />
             </button>
@@ -661,14 +699,17 @@ export default function InboxPage() {
         </div>
 
         {/* Lead Details CRM Sidebar */}
-        <div className="hidden lg:flex w-80 bg-[#0F0F0F] border-l border-[rgba(255,255,255,0.08)] flex-col p-5 overflow-y-auto shrink-0 select-none">
-          <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-[#606060] mb-5 flex items-center gap-2">
-            <Sliders size={12} className="text-orange-500" /> Premium Lead CRM
+        <div className="hidden lg:flex w-80 border-l flex-col p-5 overflow-y-auto shrink-0 select-none" style={{ background: 'var(--bg-sidebar)', borderColor: 'var(--border-glass)' }}>
+          <h3 className="text-[10px] font-extrabold uppercase tracking-widest mb-5 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+            <Sliders size={12} style={{ color: '#818CF8' }} /> Premium Lead CRM
           </h3>
           
           {/* Compact visual Card */}
-          <div className="text-center bg-black/20 border border-[rgba(255,255,255,0.04)] rounded-[20px] p-5 mb-5 shadow-md">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-500 mx-auto flex items-center justify-center text-xl font-bold uppercase select-none shadow-lg">
+          <div className="premium-card text-center rounded-[20px] p-5 mb-5">
+            <div
+              className="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-bold uppercase select-none shadow-lg text-white"
+              style={{ background: 'linear-gradient(135deg, #818CF8, #22D3EE)' }}
+            >
               {selectedConv.name.charAt(0)}
             </div>
             <p className="text-xs font-bold mt-3 text-white tracking-tight">{selectedConv.name}</p>
@@ -678,7 +719,7 @@ export default function InboxPage() {
           </div>
 
           {/* AI Summarization Panel */}
-          <div className="border border-purple-500/15 bg-purple-950/10 rounded-[18px] p-4 mb-5 shadow-inner">
+          <div className="rounded-[18px] p-4 mb-5" style={{ border: '1px solid rgba(129,140,248,0.15)', background: 'rgba(129,140,248,0.10)' }}>
             <div className="flex justify-between items-center mb-2.5">
               <span className="text-[10px] font-bold text-purple-300 flex items-center gap-1.5 uppercase tracking-wider">
                 <Sparkles size={11} className="text-purple-400" />
@@ -715,10 +756,10 @@ export default function InboxPage() {
           </div>
 
           {/* Lead Score Tactics Slider */}
-          <div className="mb-5 bg-black/20 border border-[rgba(255,255,255,0.04)] rounded-[18px] p-4 shadow-sm">
+          <div className="premium-card mb-5 rounded-[18px] p-4">
             <div className="flex justify-between text-[11px] mb-2.5 select-none font-semibold">
-              <span className="text-[#A0A0A0] flex items-center gap-1.5">
-                <TrendingUp size={11} className="text-orange-500" /> Lead Score
+              <span className="flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                <TrendingUp size={11} style={{ color: '#818CF8' }} /> Lead Score
               </span>
               <span className="text-white bg-white/5 border border-white/10 px-2 py-0.5 rounded text-[10px]">
                 {selectedConv.leadScore}/100
@@ -733,15 +774,16 @@ export default function InboxPage() {
                 max="100"
                 value={selectedConv.leadScore}
                 onChange={(e) => handleLeadScoreChange(Number(e.target.value))}
-                className="flex-1 h-1 bg-[#141414] border border-[rgba(255,255,255,0.04)] rounded-full appearance-none cursor-pointer accent-orange-500 focus:outline-none"
+                className="flex-1 h-1 rounded-full appearance-none cursor-pointer accent-[#818CF8] focus:outline-none"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-glass)' }}
               />
             </div>
           </div>
 
           {/* Lead Notes Area (Debounced persistence) */}
-          <div className="mb-5 bg-black/20 border border-[rgba(255,255,255,0.04)] rounded-[18px] p-4 shadow-sm">
-            <div className="text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-              <FileText size={11} className="text-[#A0A0A0]" /> Notes (Autosaved)
+          <div className="premium-card mb-5 rounded-[18px] p-4">
+            <div className="text-[10px] font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+              <FileText size={11} /> Notes (Autosaved)
             </div>
             <textarea
               rows={4}
@@ -749,14 +791,17 @@ export default function InboxPage() {
               onChange={(e) => handleNotesChange(e.target.value)}
               onBlur={handleNotesBlur}
               placeholder="Record lead interaction details here..."
-              className="w-full bg-black/40 border border-[rgba(255,255,255,0.08)] rounded-xl p-3 text-xs text-gray-200 placeholder-[#505050] focus:outline-none focus:border-orange-500/30 transition-all font-light leading-relaxed resize-none"
+              className="w-full rounded-xl p-3 text-xs outline-none transition-all font-light leading-relaxed resize-none"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)' }}
+              onFocus={e => (e.currentTarget.style.borderColor = 'var(--border-glow)')}
+              onBlur={e => (e.currentTarget.style.borderColor = 'var(--border-glass)')}
             />
           </div>
 
           {/* Tags Manager (Instant persist) */}
-          <div className="bg-black/20 border border-[rgba(255,255,255,0.04)] rounded-[18px] p-4 shadow-sm">
-            <div className="text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-3.5 flex items-center gap-1.5">
-              <Star size={11} className="text-orange-500" /> Tags Management
+          <div className="premium-card rounded-[18px] p-4">
+            <div className="text-[10px] font-bold uppercase tracking-wider mb-3.5 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+              <Star size={11} style={{ color: '#818CF8' }} /> Tags Management
             </div>
             
             {/* Tag Badges list */}

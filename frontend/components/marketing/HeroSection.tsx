@@ -9,11 +9,14 @@ import { MagneticButton } from './MagneticButton';
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen bg-[#050816] flex items-center pt-[120px] pb-24 overflow-hidden">
+    <section
+      className="relative min-h-[100dvh] flex items-center pt-[100px] sm:pt-[120px] pb-16 sm:pb-24 overflow-hidden"
+      style={{ background: 'var(--bg-main)' }}
+    >
       <AnimatedGrid />
       <FloatingPanels />
 
-      <div className="max-w-[1100px] w-full mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center relative z-10">
+      <div className="page-container max-w-[1100px] grid lg:grid-cols-2 gap-8 lg:gap-12 items-center relative z-10">
         <div className="flex flex-col items-start">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -33,7 +36,7 @@ export default function HeroSection() {
             className="text-white text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold leading-[1.1] tracking-tight max-w-[640px] mb-5"
           >
             Turn Every Instagram Comment Into{' '}
-            <span className="bg-gradient-to-r from-blue-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#818CF8] via-[#C084FC] to-[#22D3EE] bg-clip-text text-transparent">
               AI-Powered Revenue
             </span>
           </motion.h1>

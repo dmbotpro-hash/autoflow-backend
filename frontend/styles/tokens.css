@@ -1,38 +1,65 @@
 /**
- * AutoFlow Design Tokens — Phase 1
- * Maps to ULTIMATE UI/UX master prompt color & motion system
+ * AutoFlow Design Tokens — Premium Gemini & Linear Aesthetic
+ * Absolute layering system · Glassmorphic depth · High-contrast typography
  */
 
 :root {
-  /* Surfaces — dark (default) */
-  --af-bg-base: #050816;
-  --af-bg-elevated: #0b1020;
-  --af-bg-card: #111827;
-  --af-bg-muted: #0f172a;
-  --af-bg-glass: rgba(15, 23, 42, 0.72);
+  /* ── Absolute Layering System ── */
+  --bg-main:    #050508;          /* Deepest canvas backdrop */
+  --bg-sidebar: #08080F;          /* Mid-tone structured dock panel */
+  --bg-card:    #0B0B14;          /* Elevated surface – widgets & modules */
+  --bg-popover: #0D0D1A;          /* Dropdowns, command palettes, modals */
 
-  /* Text */
-  --af-text-primary: #f8fafc;
-  --af-text-secondary: #94a3b8;
-  --af-text-muted: #64748b;
+  /* ── Legacy surface aliases (keep existing refs working) ── */
+  --af-bg-base:     var(--bg-main);
+  --af-bg-elevated: #0B0B14;
+  --af-bg-card:     var(--bg-card);
+  --af-bg-muted:    #0D0D1A;
+  --af-bg-glass:    rgba(8, 8, 15, 0.82);
 
-  /* Accents */
-  --af-accent-blue: #3b82f6;
-  --af-accent-purple: #8b5cf6;
-  --af-accent-cyan: #22d3ee;
-  --af-accent-violet: #a855f7;
-  --af-gradient-brand: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
-  --af-gradient-glow: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(139, 92, 246, 0.35));
+  /* ── Typography High-Contrast System ── */
+  --text-primary:   #F4F4F6;      /* Velvet white — headings & active data */
+  --text-secondary: #C3C3D1;      /* Soft-white — nav labels & general text */
+  --text-muted:     #8F8FA3;      /* Slate grey — timestamps & descriptions */
 
-  /* Borders & effects */
-  --af-border-subtle: rgba(255, 255, 255, 0.06);
-  --af-border-glow: rgba(139, 92, 246, 0.35);
-  --af-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --af-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
-  --af-shadow-glow: 0 0 40px rgba(99, 102, 241, 0.15);
-  --af-blur-glass: 16px;
+  /* Legacy text aliases */
+  --af-text-primary:   var(--text-primary);
+  --af-text-secondary: var(--text-secondary);
+  --af-text-muted:     var(--text-muted);
 
-  /* Spacing scale */
+  /* ── Accents ── */
+  --af-accent-blue:   #818CF8;
+  --af-accent-purple: #C084FC;
+  --af-accent-cyan:   #22D3EE;
+  --af-accent-violet: #A78BFA;
+  --af-gradient-brand: linear-gradient(135deg, #818CF8 0%, #C084FC 50%, #22D3EE 100%);
+  --af-gradient-glow:  linear-gradient(135deg, rgba(129,140,248,0.35), rgba(192,132,252,0.25));
+
+  /* ── Structural Glass Borders & Glows ── */
+  --border-glass: rgba(255, 255, 255, 0.04);
+  --border-glow:  rgba(129, 140, 248, 0.15); /* Electric indigo micro-glow */
+
+  /* Legacy border aliases */
+  --af-border-subtle: var(--border-glass);
+  --af-border-glow:   rgba(129, 140, 248, 0.35);
+
+  /* ── Shadows ── */
+  --af-shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.5);
+  --af-shadow-md:   0 8px 32px rgba(0, 0, 0, 0.5);
+  --af-shadow-glow: 0 0 30px rgba(99, 102, 241, 0.06);
+  --af-blur-glass:  16px;
+
+  /* ── Glassmorphic Alert Layers (no more blocky banners) ── */
+  --alert-error-bg:      rgba(239, 68,  68,  0.06);
+  --alert-error-border:  rgba(239, 68,  68,  0.18);
+  --alert-warn-bg:       rgba(245, 158, 11,  0.06);
+  --alert-warn-border:   rgba(245, 158, 11,  0.18);
+  --alert-success-bg:    rgba(34,  211, 238, 0.06);
+  --alert-success-border:rgba(34,  211, 238, 0.18);
+  --alert-info-bg:       rgba(129, 140, 248, 0.06);
+  --alert-info-border:   rgba(129, 140, 248, 0.18);
+
+  /* ── Spacing scale ── */
   --af-space-1: 0.25rem;
   --af-space-2: 0.5rem;
   --af-space-3: 0.75rem;
@@ -40,26 +67,26 @@
   --af-space-6: 1.5rem;
   --af-space-8: 2rem;
 
-  /* Radius */
+  /* ── Radius ── */
   --af-radius-sm: 0.5rem;
   --af-radius-md: 0.75rem;
   --af-radius-lg: 1rem;
   --af-radius-xl: 1.25rem;
 
-  /* Motion */
-  --af-duration-fast: 150ms;
+  /* ── Motion ── */
+  --af-duration-fast:   150ms;
   --af-duration-normal: 250ms;
-  --af-duration-slow: 400ms;
+  --af-duration-slow:   400ms;
   --af-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Z-index */
+  /* ── Z-index ── */
   --af-z-sidebar: 40;
-  --af-z-topbar: 30;
-  --af-z-modal: 100;
+  --af-z-topbar:  30;
+  --af-z-modal:   100;
   --af-z-command: 110;
 
-  /* Sidebar */
-  --af-sidebar-width: 15rem;
+  /* ── Sidebar ── */
+  --af-sidebar-width:    15rem;
   --af-sidebar-collapsed: 4.5rem;
 }
 

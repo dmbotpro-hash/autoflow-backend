@@ -30,7 +30,7 @@ body {
 ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
 
 /* Selection */
-::selection { background: rgba(249,115,22,0.2); color: white; }
+::selection { background: rgba(129,140,248,0.25); color: white; }
 
 /* Tap highlight */
 * { -webkit-tap-highlight-color: transparent; }
@@ -88,20 +88,87 @@ body {
   }
 }
 
-/* Dashboard background */
+/* ── Stage 1: Premium Layered Background System ── */
 .dashboard-bg {
-  background-color: #0A0A0F;
+  background-color: var(--bg-main);
 }
 
-/* Premium radial illumination highlight */
 .premium-radial-glow {
-  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 65%), #0A0A0F;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(129,140,248,0.06) 0%, transparent 65%),
+    var(--bg-main);
 }
 
-/* Ultra-fine luxury minimalist dot grid pattern */
 .premium-dot-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.02) 1.2px, transparent 1.2px);
+  background-image: radial-gradient(rgba(255,255,255,0.018) 1.2px, transparent 1.2px);
   background-size: 32px 32px;
+}
+
+/* ── Stage 2: Premium Glassmorphic Card Base ── */
+.premium-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.5);
+  transition: border-color 300ms ease-out, box-shadow 300ms ease-out, transform 300ms ease-out;
+}
+.premium-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 30px rgba(99,102,241,0.06), 0 8px 32px 0 rgba(0,0,0,0.5);
+  transform: translateY(-1px);
+}
+
+/* ── Stage 4: Glassmorphic Toast / Alert System ── */
+.glass-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  border-radius: 0.75rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.glass-alert-error {
+  background: var(--alert-error-bg);
+  border: 1px solid var(--alert-error-border);
+  box-shadow: 0 12px 40px rgba(239,68,68,0.08);
+  color: #F87171;
+}
+.glass-alert-success {
+  background: var(--alert-success-bg);
+  border: 1px solid var(--alert-success-border);
+  box-shadow: 0 12px 40px rgba(34,211,238,0.08);
+  color: #34D399;
+}
+.glass-alert-warn {
+  background: var(--alert-warn-bg);
+  border: 1px solid var(--alert-warn-border);
+  box-shadow: 0 12px 40px rgba(245,158,11,0.08);
+  color: #FBBF24;
+}
+.glass-alert-info {
+  background: var(--alert-info-bg);
+  border: 1px solid var(--alert-info-border);
+  box-shadow: 0 12px 40px rgba(129,140,248,0.08);
+  color: #A5B4FC;
+}
+
+/* ── Stage 5: Empty-State Glowing Pulse Skeleton ── */
+@keyframes gemini-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1; }
+}
+.empty-pulse {
+  animation: gemini-pulse 2s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(129,140,248,0.05),
+    transparent
+  );
+  border-radius: 0.5rem;
 }
 
 /* Premium typography animations */
@@ -360,6 +427,56 @@ body {
 }
 .scrollbar-thin::-webkit-scrollbar { width: 3px; }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.2);
+  background: rgba(129, 140, 248, 0.25);
   border-radius: 4px;
+}
+
+/* ── Site-wide responsive layout ── */
+html {
+  overflow-x: clip;
+}
+
+.page-container {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 1.5rem);
+}
+
+.dashboard-page {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+/* Prevent iOS zoom on form focus */
+@media (max-width: 640px) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Responsive tables */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbars on horizontal chip rows but keep swipe */
+.scroll-chips {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll-chips::-webkit-scrollbar {
+  display: none;
 }

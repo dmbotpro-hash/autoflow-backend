@@ -2,9 +2,12 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-black border-t border-[rgba(255,255,255,0.06)] pt-16 pb-8 px-6 font-sans">
-      <div className="max-w-[1100px] mx-auto">
-        <div className="grid md:grid-cols-4 gap-8 mb-12">
+    <footer
+      className="border-t pt-12 sm:pt-16 pb-8 font-sans"
+      style={{ background: 'var(--bg-main)', borderColor: 'var(--border-glass)' }}
+    >
+      <div className="page-container max-w-[1100px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           
           {/* Brand Logo & Intro */}
           <div className="md:col-span-2 select-none">

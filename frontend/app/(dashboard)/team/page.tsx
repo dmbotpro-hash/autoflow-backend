@@ -76,18 +76,18 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
+    <div className="dashboard-page max-w-4xl space-y-6 min-h-0">
       <div>
-        <h1 className="text-xl font-bold text-[var(--af-text-primary)]">Team</h1>
-        <p className="text-sm text-[var(--af-text-muted)] mt-0.5">
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Team</h1>
+        <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
           Invite teammates to {active?.name ?? 'this workspace'}
         </p>
       </div>
 
       {canManage && (
-        <div className="af-glass rounded-2xl border border-[var(--af-border-subtle)] p-5 space-y-4">
-          <h2 className="text-sm font-semibold flex items-center gap-2">
-            <UserPlus size={16} className="text-violet-400" />
+        <div className="premium-card p-5 space-y-4">
+          <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <UserPlus size={16} style={{ color: '#818CF8' }} />
             Invite by email
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -96,12 +96,14 @@ export default function TeamPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="colleague@agency.com"
-              className="flex-1 min-w-[200px] h-10 px-3 rounded-xl bg-black/30 border border-[var(--af-border-subtle)] text-sm"
+              className="flex-1 min-w-0 sm:min-w-[200px] h-10 px-3 rounded-xl text-sm outline-none"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)' }}
             />
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as 'admin' | 'member')}
-              className="h-10 px-3 rounded-xl bg-black/30 border border-[var(--af-border-subtle)] text-sm"
+              className="h-10 px-3 rounded-xl text-sm outline-none w-full sm:w-auto"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)' }}
             >
               <option value="member">Member</option>
               <option value="admin">Admin</option>
@@ -111,7 +113,7 @@ export default function TeamPage() {
             </Button>
           </div>
           {lastLink && (
-            <div className="flex items-center gap-2 text-xs text-[var(--af-text-muted)] bg-black/20 p-3 rounded-xl">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-xs p-3 rounded-xl glass-alert glass-alert-info">
               <Mail size={14} />
               <span className="flex-1 truncate">
                 Share link: {typeof window !== 'undefined' ? window.location.origin : ''}
@@ -120,7 +122,7 @@ export default function TeamPage() {
               <button
                 type="button"
                 onClick={() => navigator.clipboard.writeText(`${window.location.origin}${lastLink}`)}
-                className="text-violet-400 hover:text-violet-300"
+                style={{ color: '#A5B4FC' }}
               >
                 <Copy size={14} />
               </button>
@@ -129,7 +131,7 @@ export default function TeamPage() {
         </div>
       )}
 
-      <div className="af-glass rounded-2xl border border-[var(--af-border-subtle)] p-5">
+      <div className="premium-card p-5">
         <h2 className="text-sm font-semibold flex items-center gap-2 mb-4">
           <Users size={16} />
           Members ({members.length})
@@ -141,7 +143,8 @@ export default function TeamPage() {
             {members.map((m) => (
               <li
                 key={m.userId}
-                className="flex items-center justify-between p-3 rounded-xl bg-black/20 border border-[var(--af-border-subtle)]"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl"
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)' }}
               >
                 <div>
                   <p className="text-sm font-medium text-[var(--af-text-primary)]">
@@ -150,7 +153,10 @@ export default function TeamPage() {
                   <p className="text-[10px] text-[var(--af-text-muted)]">{m.email}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] capitalize px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                  <span
+                    className="text-[10px] capitalize px-2 py-0.5 rounded-full shrink-0"
+                    style={{ background: 'rgba(129,140,248,0.10)', color: '#A5B4FC', border: '1px solid rgba(129,140,248,0.20)' }}
+                  >
                     {m.role}
                   </span>
                   {canManage && m.role !== 'owner' && (
@@ -170,7 +176,7 @@ export default function TeamPage() {
       </div>
 
       {canManage && invites.length > 0 && (
-        <div className="af-glass rounded-2xl border border-[var(--af-border-subtle)] p-5">
+        <div className="premium-card p-5">
           <h2 className="text-sm font-semibold mb-3">Pending invites</h2>
           <ul className="space-y-2">
             {invites.map((inv) => (

@@ -22,7 +22,7 @@ export const metadata = {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#050816] text-white">
+    <div className="min-h-[100dvh] overflow-x-hidden text-white" style={{ background: 'var(--bg-main)' }}>
       <Navbar />
       {/* 1. Hero — cinematic black */}
       <HeroSection />

@@ -66,7 +66,11 @@ export default function Navbar() {
           </Link>
           <Link
             href="/signup"
-            className="bg-white hover:bg-neutral-200 text-black text-xs font-semibold px-5 py-2.5 rounded-full transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-sm"
+            className="text-xs font-semibold px-5 py-2.5 rounded-full text-white transition-all duration-200 hover:scale-[1.02] active:scale-95"
+            style={{
+              background: 'linear-gradient(135deg, #818CF8, #C084FC, #22D3EE)',
+              boxShadow: '0 0 20px rgba(129,140,248,0.35)',
+            }}
           >
             Start Free <span>→</span>
           </Link>
@@ -83,11 +87,19 @@ export default function Navbar() {
 
       {/* Mobile Glassy Dropdown Menu Drawer */}
       {menuOpen && (
-        <div className="absolute top-[64px] left-0 right-0 z-50 bg-[#000000] border-b border-[rgba(255,255,255,0.08)] px-6 py-6 flex flex-col gap-4 font-sans select-none animate-text-reveal">
-          {['Demo', 'Features', 'How It Works', 'Pricing'].map((item) => (
+        <div
+          className="absolute top-[64px] left-0 right-0 z-50 border-b px-6 py-6 flex flex-col gap-4 font-sans select-none animate-text-reveal backdrop-blur-xl"
+          style={{ background: 'rgba(5,5,8,0.95)', borderColor: 'var(--border-glass)' }}
+        >
+          {[
+            ['Demo', '#demo'],
+            ['Features', '#features'],
+            ['How It Works', '#how-it-works'],
+            ['Pricing', '#pricing'],
+          ].map(([item, href]) => (
             <a
               key={item}
-              href={`#${item.toLowerCase().replace(/ /g, '-')}`}
+              href={href}
               className="text-[#A0A0A0] hover:text-white text-[14px] font-medium py-1 transition-colors duration-150"
               onClick={() => setMenuOpen(false)}
             >
@@ -104,7 +116,8 @@ export default function Navbar() {
           </Link>
           <Link
             href="/signup"
-            className="bg-white hover:bg-neutral-200 text-black text-xs font-semibold px-4 py-3 rounded-full text-center mt-2 transition-all duration-150 active:scale-95"
+            className="text-xs font-semibold px-4 py-3 rounded-full text-center mt-2 text-white transition-all duration-150 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #818CF8, #22D3EE)' }}
             onClick={() => setMenuOpen(false)}
           >
             Start Free →

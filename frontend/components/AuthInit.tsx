@@ -60,8 +60,11 @@ export function AuthInit({ children }: { children: React.ReactNode }) {
 
   if (!authReady) {
     return (
-      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-main)' }}>
+        <div
+          className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
+          style={{ borderColor: 'rgba(129,140,248,0.3)', borderTopColor: '#818CF8' }}
+        />
       </div>
     );
   }

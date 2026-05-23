@@ -523,28 +523,29 @@ function WorkflowsPageContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0A0A0F] text-white overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col overflow-hidden font-sans" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>
       
       {/* Header Visual Bar */}
-      <div className="bg-[#0F0F0F] border-b border-[rgba(255,255,255,0.08)] px-5 py-4 flex items-center justify-between gap-3 shrink-0">
-        <div>
-          <h1 className="text-sm font-bold text-white flex items-center gap-2">
-            <Zap className="text-orange-500 fill-orange-500/25" size={16} />
-            Visual Automation Infinite Canvas
+      <div className="border-b px-4 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0" style={{ background: 'rgba(8,8,15,0.95)', borderColor: 'var(--border-glass)' }}>
+        <div className="min-w-0">
+          <h1 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Zap size={16} style={{ color: '#818CF8' }} />
+            <span className="truncate">Automation Canvas</span>
           </h1>
-          <p className="text-[10px] text-[#A0A0A0] mt-0.5 font-light">
-            Build triggers, delays, and action chains. Simulates DMs, comments, and AI evaluation visually.
+          <p className="text-[10px] mt-0.5 font-light hidden sm:block" style={{ color: 'var(--text-muted)' }}>
+            Build triggers, delays, and action chains visually.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {autosaving && (
             <span className="text-[10px] text-gray-400 flex items-center gap-1 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full animate-pulse select-none">
-              <Loader2 size={10} className="animate-spin text-orange-500" /> Auto-saving canvas...
+              <Loader2 size={10} className="animate-spin" style={{ color: '#818CF8' }} /> Auto-saving canvas...
             </span>
           )}
           <button
             onClick={() => setIsNewDrawerOpen(true)}
-            className="flex items-center gap-1.5 bg-white hover:bg-gray-100 text-black px-4 py-2 rounded-xl text-xs font-bold shadow-md transform hover:-translate-y-0.5 transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md transform hover:-translate-y-0.5 transition-all active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #818CF8, #C084FC)', boxShadow: '0 0 16px rgba(129,140,248,0.3)' }}
           >
             <Plus size={13} />
             New Campaign
@@ -552,10 +553,38 @@ function WorkflowsPageContent() {
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden relative">
+      {/* Mobile campaign picker */}
+      {workflows.length > 0 && (
+        <div
+          className="md:hidden border-b px-4 py-3 shrink-0"
+          style={{ borderColor: 'var(--border-glass)', background: 'var(--bg-sidebar)' }}
+        >
+          <label className="text-[10px] font-bold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--text-muted)' }}>
+            Campaign
+          </label>
+          <select
+            value={selectedWorkflowId ?? ''}
+            onChange={(e) => setSelectedWorkflowId(e.target.value || null)}
+            className="w-full rounded-xl px-3 py-2.5 text-xs outline-none"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid var(--border-glass)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            {workflows.map((wf) => (
+              <option key={wf.id} value={wf.id}>
+                {wf.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      <div className="flex-1 flex overflow-hidden relative min-h-0">
         
         {/* Left Side Navigation Panel */}
-        <div className="hidden md:flex w-72 bg-[#0F0F0F] border-r border-[rgba(255,255,255,0.08)] flex-col overflow-hidden shrink-0 select-none">
+        <div className="hidden md:flex w-72 border-r flex-col overflow-hidden shrink-0 select-none" style={{ background: 'var(--bg-sidebar)', borderColor: 'var(--border-glass)' }}>
           <div className="p-4 border-b border-[rgba(255,255,255,0.05)] shrink-0">
             <h3 className="text-[10px] font-bold text-[#606060] uppercase tracking-widest flex items-center gap-1.5">
               <Activity size={12} className="text-gray-400" /> Instagram Campaigns ({workflows.length})
@@ -580,11 +609,14 @@ function WorkflowsPageContent() {
                 <div
                   key={wf.id}
                   onClick={() => setSelectedWorkflowId(wf.id)}
-                  className={`p-3.5 rounded-[18px] border cursor-pointer transition-all ${
-                    isSelected 
-                      ? 'bg-[#141414] border-white shadow-md' 
-                      : 'bg-black/20 border-[rgba(255,255,255,0.06)] hover:border-white/20'
-                  }`}
+                  className={`p-3.5 rounded-[18px] cursor-pointer transition-all ${isSelected ? 'shadow-md' : 'hover:border-[var(--border-glow)]'}`}
+                  style={isSelected ? {
+                    background: 'rgba(129,140,248,0.06)',
+                    border: '1px solid var(--border-glow)',
+                  } : {
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid var(--border-glass)',
+                  }}
                 >
                   <div className="flex justify-between items-start gap-2 mb-2">
                     <span className="text-[9px] uppercase tracking-wider font-extrabold text-[#606060]">
@@ -598,7 +630,7 @@ function WorkflowsPageContent() {
                           await toggle(wf.id);
                         }}
                         className={`w-6 h-3 rounded-full p-0.5 transition-colors duration-200 ${
-                          wf.isActive ? 'bg-orange-500' : 'bg-white/10'
+                          wf.isActive ? 'bg-gradient-to-r from-[#818CF8] to-[#22D3EE]' : 'bg-white/10'
                         }`}
                       >
                         <div className={`w-2 h-2 rounded-full bg-white transform transition-transform duration-200 ${
@@ -643,7 +675,7 @@ function WorkflowsPageContent() {
         </div>
 
         {/* Center Canvas Viewport */}
-        <div className="flex-1 flex flex-col bg-black overflow-hidden relative">
+        <div className="flex-1 flex flex-col overflow-hidden relative premium-dot-grid" style={{ background: 'var(--bg-main)' }}>
           {selectedWorkflow ? (
             <div className="flex-1 flex flex-col relative select-none">
               
@@ -651,7 +683,7 @@ function WorkflowsPageContent() {
               <div className="absolute top-4 left-4 right-4 flex justify-between gap-3 items-center z-30 pointer-events-none">
                 
                 {/* Save status badge */}
-                <div className="bg-[#0F0F0F]/80 backdrop-blur-md border border-[rgba(255,255,255,0.08)] rounded-xl px-3 py-2 text-xs font-semibold text-white pointer-events-auto flex items-center gap-1.5 shadow-xl select-none">
+                <div className="backdrop-blur-md rounded-xl px-3 py-2 text-xs font-semibold pointer-events-auto flex items-center gap-1.5 shadow-xl select-none" style={{ background: 'rgba(8,8,15,0.80)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)' }}>
                   <span className={`w-1.5 h-1.5 rounded-full ${selectedWorkflow.isActive ? 'bg-emerald-400' : 'bg-yellow-400'}`} />
                   <span className="truncate max-w-[120px] font-bold text-[10px]">{selectedWorkflow.name}</span>
                 </div>
@@ -670,14 +702,15 @@ function WorkflowsPageContent() {
                     <button
                       onClick={startSimulation}
                       disabled={nodes.length === 0}
-                      className="flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-black font-extrabold text-[10px] uppercase tracking-widest px-4 py-2.5 rounded-xl shadow-lg shadow-orange-500/10 hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
+                      className="flex items-center gap-1.5 text-white font-extrabold text-[10px] uppercase tracking-widest px-4 py-2.5 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
+                      style={{ background: 'linear-gradient(135deg, #818CF8, #22D3EE)', boxShadow: '0 0 20px rgba(129,140,248,0.25)' }}
                     >
                       <Play size={10} className="fill-black" /> Run simulation
                     </button>
                   )}
 
                   {/* Zoom utilities toolbar */}
-                  <div className="bg-[#0F0F0F]/90 backdrop-blur-md border border-[rgba(255,255,255,0.08)] rounded-xl flex items-center p-1 shadow-2xl">
+                  <div className="backdrop-blur-md rounded-xl flex items-center p-1 shadow-2xl" style={{ background: 'rgba(8,8,15,0.90)', border: '1px solid var(--border-glass)' }}>
                     <button
                       onClick={zoomOut}
                       className="text-[#808080] hover:text-white p-2 hover:bg-white/5 rounded-lg transition-colors"
@@ -708,7 +741,7 @@ function WorkflowsPageContent() {
               </div>
 
               {/* Floating Left Drawer Node Palette */}
-              <div className="absolute left-4 top-20 bottom-4 w-44 bg-[#0F0F0F]/85 backdrop-blur border border-[rgba(255,255,255,0.08)] rounded-[20px] shadow-2xl flex flex-col p-3.5 z-20 shrink-0 select-none">
+              <div className="absolute left-2 sm:left-4 top-24 sm:top-20 bottom-20 sm:bottom-4 w-36 sm:w-44 backdrop-blur rounded-[20px] shadow-2xl flex flex-col p-2.5 sm:p-3.5 z-20 shrink-0 select-none max-sm:max-h-[40vh]" style={{ background: 'rgba(8,8,15,0.85)', border: '1px solid var(--border-glass)' }}>
                 <h4 className="text-[9px] font-extrabold uppercase tracking-widest text-[#505050] mb-3 flex items-center gap-1 select-none">
                   <Sliders size={10} /> Node Palette
                 </h4>
@@ -719,12 +752,12 @@ function WorkflowsPageContent() {
 
                 <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-0.5 no-scrollbar">
                   {[
-                    { type: 'trigger', label: 'Trigger', color: 'border-orange-500/30 hover:border-orange-400 bg-orange-950/10 text-orange-200' },
-                    { type: 'delay', label: 'Delay Time', color: 'border-blue-500/30 hover:border-blue-400 bg-blue-950/10 text-blue-200' },
-                    { type: 'ai', label: 'AI Evaluation', color: 'border-purple-500/30 hover:border-purple-400 bg-purple-950/10 text-purple-200' },
-                    { type: 'condition', label: 'Score Match', color: 'border-amber-500/30 hover:border-amber-400 bg-amber-950/10 text-amber-200' },
-                    { type: 'action', label: 'Send Response', color: 'border-emerald-500/30 hover:border-emerald-400 bg-emerald-950/10 text-emerald-200' },
-                    { type: 'crm', label: 'CRM Update', color: 'border-pink-500/30 hover:border-pink-400 bg-pink-950/10 text-pink-200' }
+                    { type: 'trigger', label: 'Trigger', color: 'border-[rgba(129,140,248,0.3)] hover:border-[#818CF8] bg-[rgba(129,140,248,0.08)] text-[#C7D2FE]' },
+                    { type: 'delay', label: 'Delay Time', color: 'border-[rgba(34,211,238,0.3)] hover:border-[#22D3EE] bg-[rgba(34,211,238,0.08)] text-[#A5F3FC]' },
+                    { type: 'ai', label: 'AI Evaluation', color: 'border-[rgba(192,132,252,0.3)] hover:border-[#C084FC] bg-[rgba(192,132,252,0.08)] text-[#E9D5FF]' },
+                    { type: 'condition', label: 'Score Match', color: 'border-[rgba(129,140,248,0.25)] hover:border-[#818CF8] bg-[rgba(129,140,248,0.06)] text-[#DDD6FE]' },
+                    { type: 'action', label: 'Send Response', color: 'border-[rgba(52,211,153,0.3)] hover:border-[#34D399] bg-[rgba(52,211,153,0.08)] text-[#A7F3D0]' },
+                    { type: 'crm', label: 'CRM Update', color: 'border-[rgba(34,211,238,0.25)] hover:border-[#22D3EE] bg-[rgba(34,211,238,0.06)] text-[#BAE6FD]' }
                   ].map(opt => (
                     <button
                       key={opt.type}
@@ -761,8 +794,8 @@ function WorkflowsPageContent() {
                   <defs>
                     {/* Glowing gradient indicators */}
                     <linearGradient id="edge-glow" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f97316" stopOpacity="0.4" />
-                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.4" />
+                      <stop offset="0%" stopColor="#818CF8" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#22D3EE" stopOpacity="0.4" />
                     </linearGradient>
                     <linearGradient id="edge-glow-sim" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#22C55E" />
@@ -877,7 +910,8 @@ function WorkflowsPageContent() {
                         {/* Output Connection Socket Port Circle */}
                         <div
                           onMouseDown={(e) => startConnectionDrag(node.id, e)}
-                          className="absolute right-[-6px] top-[54px] w-3 h-3 rounded-full bg-[#0F0F0F] border-2 border-orange-500 hover:bg-orange-500 hover:scale-125 transition-all cursor-crosshair z-30"
+                          className="absolute right-[-6px] top-[54px] w-3 h-3 rounded-full border-2 border-[#818CF8] hover:bg-[#818CF8] hover:scale-125 transition-all cursor-crosshair z-30"
+                          style={{ background: 'var(--bg-card)' }}
                           title="Drag connection line from output"
                         />
 
@@ -889,7 +923,7 @@ function WorkflowsPageContent() {
                           <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-lg bg-black border border-[rgba(255,255,255,0.08)] flex items-center justify-center font-bold text-xs select-none">
                               {node.type === 'trigger' ? (
-                                <Zap size={12} className="text-orange-400" />
+                                <Zap size={12} style={{ color: '#818CF8' }} />
                               ) : node.type === 'ai' ? (
                                 <Sparkles size={12} className="text-purple-400" />
                               ) : node.type === 'delay' ? (
@@ -1040,7 +1074,8 @@ function WorkflowsPageContent() {
                                   value={node.config?.leadScoreThreshold || 50}
                                   onChange={(e) => updateNodeConfig(node.id, { leadScoreThreshold: Number(e.target.value) })}
                                   onMouseUp={() => saveWorkflowCanvas(nodes, edges)}
-                                  className="flex-1 h-1 bg-black rounded-full accent-orange-500"
+                                  className="flex-1 h-1 rounded-full accent-[#818CF8]"
+                                  style={{ background: 'rgba(255,255,255,0.06)' }}
                                 />
                                 <span className="text-[9px] font-bold text-gray-300 font-mono">
                                   {node.config?.leadScoreThreshold || 50}
@@ -1129,7 +1164,7 @@ function WorkflowsPageContent() {
             
             <div className="flex justify-between items-center mb-6 border-b border-[rgba(255,255,255,0.06)] pb-4 shrink-0 select-none">
               <div className="flex items-center gap-2">
-                <Sparkles className="text-orange-500 animate-pulse" size={16} />
+                <Sparkles className="animate-pulse" size={16} style={{ color: '#818CF8' }} />
                 <h2 className="text-sm font-bold text-white uppercase tracking-tight">Configure New Campaign</h2>
               </div>
               <button 
@@ -1249,7 +1284,7 @@ export default function WorkflowsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center text-[#606060] text-xs">
+        <div className="min-h-screen flex items-center justify-center text-xs" style={{ background: 'var(--bg-main)', color: 'var(--text-muted)' }}>
           Loading workflows...
         </div>
       }

@@ -6,10 +6,10 @@ import { cn } from '@/lib/utils/cn';
 type Variant = 'dark' | 'light' | 'cinematic';
 
 const variants: Record<Variant, string> = {
-  dark: 'bg-[#050816] text-white',
+  dark: 'text-white',
   light: 'bg-white text-slate-900',
   cinematic:
-    'bg-[#050816] text-white premium-radial-glow premium-dot-grid relative overflow-hidden',
+    'text-white premium-radial-glow premium-dot-grid relative overflow-hidden',
 };
 
 export function MarketingSection({
@@ -28,9 +28,10 @@ export function MarketingSection({
   return (
     <section
       id={id}
-      className={cn(variants[variant], !noPadding && 'py-20 md:py-28 px-6', className)}
+      className={cn(variants[variant], !noPadding && 'py-16 sm:py-20 md:py-28', className)}
+      style={variant !== 'light' ? { background: 'var(--bg-main)' } : undefined}
     >
-      <div className="max-w-[1100px] mx-auto relative z-10">{children}</div>
+      <div className="page-container max-w-[1100px] relative z-10">{children}</div>
     </section>
   );
 }
@@ -51,8 +52,9 @@ export function SectionHeader({
       <p
         className={cn(
           'text-xs font-semibold uppercase tracking-[0.2em] mb-3',
-          light ? 'text-violet-600' : 'text-violet-400/80',
+          light ? 'text-indigo-600' : '',
         )}
+        style={!light ? { color: '#A5B4FC' } : undefined}
       >
         {label}
       </p>

@@ -41,10 +41,10 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6">
+    <div className="dashboard-page max-w-6xl space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-[var(--af-text-primary)] flex items-center gap-2">
-          <Sparkles className="text-violet-400" size={22} />
+        <h1 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+          <Sparkles size={22} style={{ color: '#818CF8' }} />
           Template marketplace
         </h1>
         <p className="text-sm text-[var(--af-text-muted)] mt-0.5">
@@ -58,11 +58,15 @@ export default function TemplatesPage() {
             key={c}
             type="button"
             onClick={() => setFilter(c)}
-            className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-              filter === c
-                ? 'border-violet-500/50 bg-violet-500/15 text-violet-300'
-                : 'border-[var(--af-border-subtle)] text-[var(--af-text-muted)]'
-            }`}
+            className="px-3 py-1.5 rounded-full text-xs border transition-colors"
+            style={filter === c ? {
+              border: '1px solid var(--border-glow)',
+              background: 'rgba(129,140,248,0.12)',
+              color: '#C7D2FE',
+            } : {
+              border: '1px solid var(--border-glass)',
+              color: 'var(--text-muted)',
+            }}
           >
             {c}
           </button>
@@ -73,9 +77,9 @@ export default function TemplatesPage() {
         {filtered.map((t) => (
           <div
             key={t.id}
-            className="af-glass rounded-2xl border border-[var(--af-border-subtle)] p-5 flex flex-col"
+            className="premium-card p-5 flex flex-col"
           >
-            <span className="text-[10px] font-bold uppercase tracking-wider text-violet-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#818CF8' }}>
               {t.category}
             </span>
             <h3 className="text-sm font-semibold text-[var(--af-text-primary)] mt-2">

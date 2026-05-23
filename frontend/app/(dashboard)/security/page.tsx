@@ -60,10 +60,10 @@ export default function SecurityPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
+    <div className="dashboard-page max-w-4xl space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-[var(--af-text-primary)] flex items-center gap-2">
-          <Shield size={22} className="text-violet-400" />
+        <h1 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+          <Shield size={22} style={{ color: '#818CF8' }} />
           Security
         </h1>
         <p className="text-sm text-[var(--af-text-muted)] mt-0.5">
@@ -71,7 +71,7 @@ export default function SecurityPage() {
         </p>
       </div>
 
-      <div className="af-glass rounded-2xl border border-[var(--af-border-subtle)] p-5">
+      <div className="premium-card p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold flex items-center gap-2">
             <Monitor size={16} />
@@ -112,7 +112,7 @@ export default function SecurityPage() {
         )}
       </div>
 
-      <div className="af-glass rounded-2xl border border-[var(--af-border-subtle)] p-5">
+      <div className="premium-card p-5">
         <h2 className="text-sm font-semibold flex items-center gap-2 mb-4">
           <History size={16} />
           Login history

@@ -30,7 +30,7 @@ export default function SettingsPage() {
             instaConnected: res.data.instaConnected ?? false,
             instaUsername: res.data.instaUsername ?? null,
             aiTone: res.data.aiTone ?? 'Friendly',
-            aiPrompt: res.data.aiPrompt ?? 'You are a helpful customer support assistant for a digital marketing business. Keep your replies concise and focus on guiding users toward our products.',
+            aiPrompt: res.data.aiPrompt ?? 'You are a helpful customer support assistant...',
           });
         }
       })
@@ -43,15 +43,11 @@ export default function SettingsPage() {
     setSaveLoading(true);
     setMessage({ type: 'success', text: 'Saving…' });
     try {
-      await api.post('/settings', {
-        aiTone: settings.aiTone,
-        aiPrompt: settings.aiPrompt,
-      });
+      await api.post('/settings', { aiTone: settings.aiTone, aiPrompt: settings.aiPrompt });
       setMessage({ type: 'success', text: 'Settings saved successfully!' });
     } catch (e) {
       setSettings(snapshot);
       setMessage({ type: 'error', text: 'Failed to save settings. Please try again.' });
-      console.error(e);
     } finally {
       setSaveLoading(false);
     }
@@ -62,138 +58,186 @@ export default function SettingsPage() {
       const response = await api.post('/settings/instagram/connect', {});
       const username = response.data?.instaUsername ?? response.data?.username;
       if (username || response.data?.instaConnected) {
-        setSettings(prev => ({
-          ...prev,
-          instaConnected: true,
-          instaUsername: username ?? 'mock_business',
-        }));
+        setSettings(prev => ({ ...prev, instaConnected: true, instaUsername: username ?? 'mock_business' }));
         setMessage({ type: 'success', text: 'Successfully connected Instagram account!' });
       }
-    } catch (e) {
+    } catch {
       setMessage({ type: 'error', text: 'Could not connect Instagram account.' });
-      console.error(e);
     }
   };
 
   const handleDisconnectInsta = async () => {
     try {
       await api.post('/settings/instagram/disconnect');
-      setSettings(prev => ({
-        ...prev,
-        instaConnected: false,
-        instaUsername: null,
-      }));
+      setSettings(prev => ({ ...prev, instaConnected: false, instaUsername: null }));
       setMessage({ type: 'success', text: 'Instagram account disconnected.' });
-    } catch (e) {
+    } catch {
       setMessage({ type: 'error', text: 'Failed to disconnect Instagram.' });
-      console.error(e);
     }
   };
 
   const tones = [
-    { id: 'friendly', label: 'Friendly', emoji: '😊' },
-    { id: 'professional', label: 'Professional', emoji: '💼' },
-    { id: 'casual', label: 'Casual', emoji: '👋' },
-    { id: 'sales', label: 'Sales-Focused', emoji: '🚀' },
+    { id: 'friendly',     label: 'Friendly',      emoji: '😊' },
+    { id: 'professional', label: 'Professional',  emoji: '💼' },
+    { id: 'casual',       label: 'Casual',         emoji: '👋' },
+    { id: 'sales',        label: 'Sales-Focused',  emoji: '🚀' },
   ];
 
+  /* Loading spinner */
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center font-sans">
-        <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: 'var(--bg-main)' }}
+      >
+        <div
+          className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: 'rgba(129,140,248,0.3)', borderTopColor: '#818CF8' }}
+        />
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 min-h-screen bg-slate-900 text-white font-sans">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] pb-6">
+    <div
+      className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 min-h-screen"
+      style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+    >
+      {/* ── Header ─────────────────────────────────────── */}
+      <div
+        className="flex items-center justify-between pb-6"
+        style={{ borderBottom: '1px solid var(--border-glass)' }}
+      >
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-white">Settings</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Settings
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
             Configure integrations and AI personalities
           </p>
         </div>
       </div>
 
-      {/* Alert Notifications */}
+      {/* ── Glass alert ────────────────────────────────── */}
       {message && (
-        <div className={`p-4 rounded-xl flex items-center gap-3 border text-xs leading-relaxed animate-fade-in ${
-          message.type === 'success' 
-            ? 'bg-green-500/10 border-green-500/20 text-green-400' 
-            : 'bg-red-500/10 border-red-500/20 text-red-400'
-        }`}>
-          {message.type === 'success' ? <Check size={16} /> : <AlertCircle size={16} />}
-          <span>{message.text}</span>
+        <div className={`glass-alert rounded-xl ${message.type === 'success' ? 'glass-alert-success' : 'glass-alert-error'}`}>
+          {message.type === 'success'
+            ? <Check size={15} className="shrink-0" />
+            : <AlertCircle size={15} className="shrink-0" />}
+          <span className="text-xs">{message.text}</span>
         </div>
       )}
 
-      {/* Section 1: Instagram Integration */}
-      <div className="bg-slate-800 border border-[rgba(255,255,255,0.08)] rounded-2xl p-5 md:p-6 space-y-4">
-        <div className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.06)] pb-4">
-          <div className="w-9 h-9 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 select-none">
+      {/* ── Section 1: Instagram Integration ────────────── */}
+      <div
+        className="premium-card p-5 md:p-6 space-y-4"
+      >
+        <div
+          className="flex items-center gap-3 pb-4"
+          style={{ borderBottom: '1px solid var(--border-glass)' }}
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{
+              background: 'rgba(236,72,153,0.10)',
+              border: '1px solid rgba(236,72,153,0.20)',
+              color: '#F472B6',
+            }}
+          >
             <Instagram size={18} />
           </div>
           <div>
-            <h3 className="text-white font-semibold text-sm">Instagram Account Connection</h3>
-            <p className="text-[#A0A0A0] text-xs font-light mt-0.5">Link your Instagram Business profile to enable automations</p>
+            <h3 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
+              Instagram Account Connection
+            </h3>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              Link your Instagram Business profile to enable automations
+            </p>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
           <div className="min-w-0">
-            <div className="text-xs font-semibold text-white">Status</div>
-            <div className="text-[#A0A0A0] text-xs font-light mt-1">
-              {settings.instaConnected && settings.instaUsername ? (
-                <span className="flex items-center gap-1.5 text-green-400 font-medium">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                  Connected as @{settings.instaUsername}
-                </span>
-              ) : (
-                <span className="text-[#606060]">No business account linked</span>
-              )}
+            <div className="text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+              Status
             </div>
-          </div>
-
-          <div>
-            {settings.instaConnected ? (
-              <button
-                type="button"
-                onClick={handleDisconnectInsta}
-                className="w-full sm:w-auto bg-transparent border border-red-500/30 text-red-400 hover:bg-red-500/5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all"
-              >
-                Disconnect Account
-              </button>
+            {settings.instaConnected && settings.instaUsername ? (
+              <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#34D399' }}>
+                <span className="w-1.5 h-1.5 bg-[#34D399] rounded-full animate-pulse" />
+                Connected as @{settings.instaUsername}
+              </span>
             ) : (
-              <button
-                type="button"
-                onClick={handleConnectInsta}
-                className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-pink-600 hover:opacity-92 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-sm transition-all"
-              >
-                Connect Instagram
-              </button>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                No business account linked
+              </span>
             )}
           </div>
+
+          {settings.instaConnected ? (
+            <button
+              type="button"
+              onClick={handleDisconnectInsta}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold transition-all"
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(239,68,68,0.30)',
+                color: '#F87171',
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.06)'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+            >
+              Disconnect Account
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleConnectInsta}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-white"
+              style={{
+                background: 'linear-gradient(135deg, #818CF8, #C084FC)',
+                boxShadow: '0 0 16px rgba(129,140,248,0.3)',
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 0 24px rgba(129,140,248,0.5)'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 0 16px rgba(129,140,248,0.3)'}
+            >
+              Connect Instagram
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Section 2: AI Automation Tuning */}
-      <div className="bg-slate-800 border border-[rgba(255,255,255,0.08)] rounded-2xl p-5 md:p-6 space-y-5">
-        <div className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.06)] pb-4">
-          <div className="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 select-none">
+      {/* ── Section 2: AI Personality ───────────────────── */}
+      <div className="premium-card p-5 md:p-6 space-y-5">
+        <div
+          className="flex items-center gap-3 pb-4"
+          style={{ borderBottom: '1px solid var(--border-glass)' }}
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{
+              background: 'rgba(129,140,248,0.10)',
+              border: '1px solid rgba(129,140,248,0.20)',
+              color: '#818CF8',
+            }}
+          >
             <Sparkles size={18} />
           </div>
           <div>
-            <h3 className="text-white font-semibold text-sm">AI Agent Personality</h3>
-            <p className="text-[#A0A0A0] text-xs font-light mt-0.5">Customize default response templates and parameters</p>
+            <h3 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
+              AI Agent Personality
+            </h3>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              Customize default response templates and parameters
+            </p>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Tone Selector */}
           <div>
-            <label className="text-xs font-semibold text-white mb-2 block select-none">Select Response Tone</label>
+            <label className="text-xs font-semibold mb-2.5 block" style={{ color: 'var(--text-primary)' }}>
+              Select Response Tone
+            </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {tones.map((tone) => {
                 const isSelected = settings.aiTone.toLowerCase() === tone.id;
@@ -202,12 +246,35 @@ export default function SettingsPage() {
                     key={tone.id}
                     type="button"
                     onClick={() => setSettings(prev => ({ ...prev, aiTone: tone.label }))}
-                    className={`px-3 py-3 rounded-xl border text-xs font-semibold transition-all flex items-center justify-center ${
+                    className="px-3 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
+                    style={
                       isSelected
-                        ? 'bg-white text-black border-white'
-                        : 'bg-black border-[rgba(255,255,255,0.08)] text-gray-400 hover:text-white hover:border-gray-600'
-                    }`}
+                        ? {
+                            background: 'rgba(129,140,248,0.15)',
+                            border: '1px solid var(--border-glow)',
+                            color: 'var(--text-primary)',
+                            boxShadow: '0 0 12px rgba(129,140,248,0.15)',
+                          }
+                        : {
+                            background: 'rgba(255,255,255,0.03)',
+                            border: '1px solid var(--border-glass)',
+                            color: 'var(--text-muted)',
+                          }
+                    }
+                    onMouseEnter={e => {
+                      if (!isSelected) {
+                        (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-glow)';
+                        (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!isSelected) {
+                        (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-glass)';
+                        (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
+                      }
+                    }}
                   >
+                    <span>{tone.emoji}</span>
                     {tone.label}
                   </button>
                 );
@@ -215,27 +282,50 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Prompt Instructions */}
+          {/* AI Prompt */}
           <div>
-            <label className="text-xs font-semibold text-white mb-2 block select-none">AI Prompt Rules</label>
+            <label className="text-xs font-semibold mb-2 block" style={{ color: 'var(--text-primary)' }}>
+              AI Prompt Rules
+            </label>
             <textarea
               rows={5}
               value={settings.aiPrompt}
               onChange={e => setSettings(prev => ({ ...prev, aiPrompt: e.target.value }))}
               placeholder="Tell the AI how to act, guidelines, prices, or links..."
-              className="w-full bg-black border border-[rgba(255,255,255,0.08)] rounded-xl p-3 text-xs text-white placeholder-[#606060] focus:outline-none focus:border-white transition-all resize-none leading-relaxed font-light"
+              className="w-full rounded-xl p-3 text-xs outline-none resize-none leading-relaxed transition-all duration-200"
+              style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid var(--border-glass)',
+                color: 'var(--text-primary)',
+              }}
+              onFocus={e => (e.currentTarget.style.borderColor = 'var(--border-glow)')}
+              onBlur={e => (e.currentTarget.style.borderColor = 'var(--border-glass)')}
             />
           </div>
         </div>
 
-        <div className="pt-2 border-t border-[rgba(255,255,255,0.06)] flex justify-end">
+        <div
+          className="pt-4 flex justify-end"
+          style={{ borderTop: '1px solid var(--border-glass)' }}
+        >
           <button
             type="button"
             onClick={handleSave}
             disabled={saveLoading}
-            className="w-full sm:w-auto bg-white hover:opacity-88 active:scale-95 text-black px-5 py-2.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-semibold transition-all text-white disabled:opacity-50 active:scale-95"
+            style={{
+              background: 'linear-gradient(135deg, #818CF8, #C084FC, #22D3EE)',
+              boxShadow: '0 0 20px rgba(129,140,248,0.3)',
+            }}
           >
-            {saveLoading ? 'Saving...' : 'Save Settings'}
+            {saveLoading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 rounded-full border border-white/30 border-t-white animate-spin" />
+                Saving...
+              </span>
+            ) : (
+              'Save Settings'
+            )}
           </button>
         </div>
       </div>

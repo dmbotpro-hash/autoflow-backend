@@ -23,11 +23,16 @@ const tabs = [
 export function MobileBottomNav() {
   const pathname = usePathname();
   const unread = useNotificationsStore((s) => s.unreadCount);
-  const toggleDrawer = useNotificationsStore((s) => s.toggleDrawer);
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-[var(--af-z-topbar)] af-glass border-t border-[var(--af-border-subtle)] safe-area-pb"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-[var(--af-z-topbar)] safe-area-pb border-t"
+      style={{
+        background: 'rgba(8,8,15,0.92)',
+        borderColor: 'var(--border-glass)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+      }}
       aria-label="Primary mobile navigation"
     >
       <ul className="flex items-stretch justify-around h-16 max-w-lg mx-auto">
@@ -37,26 +42,28 @@ export function MobileBottomNav() {
           const isInbox = tab.href === '/inbox';
 
           return (
-            <li key={tab.href} className="flex-1">
+            <li key={tab.href} className="flex-1 min-w-0">
               <Link
                 href={tab.href}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-0.5 h-full text-[10px] font-medium transition-colors',
-                  active
-                    ? 'text-violet-400'
-                    : 'text-[var(--af-text-muted)] hover:text-[var(--af-text-secondary)]',
+                  'flex flex-col items-center justify-center gap-0.5 h-full text-[10px] font-medium transition-colors touch-target',
+                  active ? '' : '',
                 )}
+                style={{ color: active ? '#A5B4FC' : 'var(--text-muted)' }}
                 aria-current={active ? 'page' : undefined}
               >
                 <span className="relative">
                   <Icon size={20} strokeWidth={active ? 2.5 : 2} aria-hidden />
                   {isInbox && unread > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full bg-violet-600 text-[8px] font-bold text-white flex items-center justify-center">
+                    <span
+                      className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full text-[8px] font-bold text-white flex items-center justify-center"
+                      style={{ background: 'linear-gradient(135deg, #818CF8, #22D3EE)' }}
+                    >
                       {unread > 9 ? '9+' : unread}
                     </span>
                   )}
                 </span>
-                {tab.label}
+                <span className="truncate max-w-full px-0.5">{tab.label}</span>
               </Link>
             </li>
           );
