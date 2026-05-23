@@ -4,12 +4,17 @@
   "scripts": {
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
-    "build": "nest build",
+    "build": "npx nest build",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
+    "@nestjs/cli": "^10.0.0",
     "@google/generative-ai": "^0.24.1",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^10.0.0",
@@ -33,10 +38,11 @@
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.0",
+    "prisma": "^5.22.0",
+    "typescript": "^5.0.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@types/bcrypt": "^5.0.0",
     "@types/compression": "^1.8.1",
@@ -44,8 +50,6 @@
     "@types/passport-google-oauth20": "^2.0.0",
     "@types/passport-jwt": "^3.0.0",
     "@types/socket.io": "^3.0.1",
-    "prisma": "^5.22.0",
-    "ts-node": "^10.0.0",
-    "typescript": "^5.0.0"
+    "ts-node": "^10.0.0"
   }
 }
